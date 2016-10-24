@@ -1,4 +1,4 @@
-# tmmo project (Text MMORPG)
+# tmmo project (Text-based MMORPG)
 
 Project includes:
 
