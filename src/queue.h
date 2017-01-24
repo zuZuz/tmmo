@@ -4,8 +4,6 @@
 #include <stdbool.h>
 #include <pthread.h>
 
-#define DEFAULT 100
-
 typedef struct queue_node_t queue_node_t;
 typedef struct queue_t queue_t;
 
@@ -35,10 +33,7 @@ queue_enqueue(queue_t* queue, void* data);
 void
 queue_dequeue(queue_t* queue, void** data);
 
-void*
-queue_dequeues(queue_t* queue, void** datas);
-
 void
-queue_destroy (queue_t* queue, void (void*));
+queue_destroy(queue_t* queue, void (void*));
 
 #endif
