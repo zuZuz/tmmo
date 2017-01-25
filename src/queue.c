@@ -4,9 +4,8 @@
 
 /*
  *
- *	Thread-safe (??) implementation of queue
- *	using mutex. Need refactoring.
- *  Check queue_enqueue for details.
+ *	Simple thread-safe (??) implementation 
+ *	of queue using mutex. 
  *
  */
 
@@ -26,8 +25,8 @@ queue_t* queue_init()
 	}
 
 	pthread_mutex_init(&(queue->mutex), NULL);
-
 	queue_init_empty(queue);
+
 	return queue;
 }
 
@@ -45,11 +44,6 @@ bool queue_is_empty(queue_t* queue)
 
 void queue_enqueue(queue_t* queue, void* data)
 {
-	/*
-	 * Too many mallocs
-	 * Rewrite queue on dynamic array of pointers
-	 */
-
 	queue_node_t* node = malloc(sizeof(queue_node_t));
 	if (!node)
 	{

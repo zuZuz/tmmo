@@ -72,7 +72,7 @@ void conn_destroy(conn_t* con)
 	free(con);
 }
 
-msg_t* msg_init(conn_t* con, size_t size)
+msg_t* msg_init(const conn_t* con, size_t size)
 {
 	msg_t* msg = malloc(sizeof(msg_t));
 	if (!msg)
@@ -112,11 +112,21 @@ ssize_t msg_send(const conn_t* con, const msg_t* msg)
 
 msg_t* msg_recv(const conn_t* con, const size_t buf_size)
 {
-	unsigned size = sizeof(struct sockaddr);
-	msg_t* msg = msg_init(NULL, buf_size);
+	msg_t* msg;
+	unsigned size;
+	ssize_t received;
+	
+	size = sizeof(struct sockaddr);
+	msg = msg_init(NULL, buf_size);
 
-	msg->len = recvfrom(con->socket, msg->body, buf_size,
+	received = recvfrom(con->socket, msg->body, buf_size,
 		0, (struct sockaddr*) &msg->addr, &size);
+
+	if (received < 0)
+	{
+		msg_destroy(msg);
+		return NULL;
+	}
 
 	return msg;
 }
