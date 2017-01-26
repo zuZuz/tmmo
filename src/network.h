@@ -11,6 +11,14 @@
 
 /* own types */
 
+enum flags
+{
+	NOFLAGS = 0,
+	BIND = 1,
+
+};
+
+typedef unsigned short port_t;
 typedef struct message_t msg_t;
 typedef struct conn_t conn_t;
 
@@ -29,11 +37,12 @@ struct conn_t
 
 /* functions */
 
-conn_t* 
-server_init(unsigned short port);
 
 conn_t* 
-client_init(char address[], unsigned short port);
+conn_init(char address[], port_t port, int flags);
+
+int 
+conn_set_timeout(conn_t* con, unsigned long ms);
 
 void
 conn_destroy(conn_t* con);

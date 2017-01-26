@@ -1,11 +1,12 @@
 #include <arpa/inet.h>
 #include <malloc.h>
 #include <string.h>
+#include <sys/time.h>
 #include <unistd.h>
 
 #include "network.h"
 
-static conn_t* conn_init(unsigned short port)
+static conn_t* conn_socket(unsigned short port)
 {
 	conn_t* con = malloc(sizeof(conn_t));
 	
@@ -27,17 +28,8 @@ static conn_t* conn_init(unsigned short port)
 	return con;
 }
 
-conn_t* server_init(unsigned short port)
+static conn_t* conn_bind(conn_t* con)
 {
-	conn_t* con = conn_init(port);
-
-	if (!con)
-	{
-		return NULL;
-	}
-
-	con->addr.sin_addr.s_addr = INADDR_ANY;
-
 	if (bind(con->socket, (struct sockaddr*) 
 		&con->addr, sizeof(struct sockaddr)) == -1)
 	{
@@ -48,9 +40,9 @@ conn_t* server_init(unsigned short port)
 	return con;
 }
 
-conn_t* client_init(char address[], unsigned short port)
+conn_t* conn_init(char address[], port_t port, int flags)
 {
-	conn_t* con = conn_init(port);
+	conn_t* con = conn_socket(port);
 
 	if (!con)
 	{
@@ -63,7 +55,25 @@ conn_t* client_init(char address[], unsigned short port)
 		return NULL;
 	}
 
+	if ((flags & BIND) && !conn_bind(con))
+	{
+		conn_destroy(con);
+		return NULL;
+	}
+
 	return con;
+}
+
+int conn_set_timeout(conn_t* con, unsigned long ms)
+{
+	struct timeval time = {0, ms * 1000};
+	
+	return setsockopt(
+		con->socket, 
+		SOL_SOCKET, 
+		SO_RCVTIMEO, 
+		&time, sizeof(time)
+	);
 }
 
 void conn_destroy(conn_t* con)
