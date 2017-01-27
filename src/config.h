@@ -4,19 +4,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define MAX_LEN 256
+#include "server.h"
+
 #define MAX_OPTS 32
-
-/* opts types */
-
-enum cfg_type_t
-{
-	INT_PROP = 0,
-	BOOL_PROP = 1,
-	STR_PROP = 2,
-};
-
-typedef enum cfg_type_t cfg_type_t;
 
 /* config structures */
 
@@ -39,21 +29,31 @@ struct cfg_t
 	ssize_t lastopt;
 };
 
+
+cfg_t* 
+config_init(size_t size);
+
 cfg_t* 
 config_load(char filename[]);
 
-
-void config_setopt(cfg_t* cfg, char* key, char* value);
-
-void config_opt_destroy(cfg_opt_t* opt);
-
-
-cfg_opt_t* config_getopt(cfg_t* cfg, char* key);
+void 
+config_save(char filename[], cfg_t* cfg);
 
 void 
 config_destroy(cfg_t* cfg);
 
+
+cfg_opt_t* 
+config_opt_init(char* key, char* value);
+
 void 
-config_save(char filename[], cfg_t* cfg);
+config_setopt(cfg_t* cfg, char* key, char* value);
+
+char* 
+config_getopt(cfg_t* cfg, char* key);
+
+void 
+config_opt_destroy(cfg_opt_t* opt);
+
 
 #endif

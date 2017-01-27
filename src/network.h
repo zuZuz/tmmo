@@ -5,9 +5,10 @@
 
 #include <arpa/inet.h>
 
+#include "server.h"
+
 /* constants */
 
-#define MAX_LEN 256
 #define MS 1000
 
 /* own types */

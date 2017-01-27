@@ -8,9 +8,21 @@
 
 #include <string.h>
 
-#include "network.h"
-#include "array.h"
-#include "queue.h"
+#include "config.h"
+#include "server.h"
+
+cfg_t* confg_default()
+{
+	cfg_t* cfg = config_init(MAX_OPTS);
+
+	config_setopt(cfg, "max_players", "11000");
+	config_setopt(cfg, "port", "11000");
+	config_setopt(cfg, "shard_enabled", "false");
+	config_setopt(cfg, "port", "11000");
+
+	config_save("server.conf", cfg);
+	return cfg;
+}
 
 int main(int argc, char* argv[])
 {

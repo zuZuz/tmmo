@@ -175,16 +175,15 @@ void config_setopt(cfg_t* cfg, char* key, char* value)
 
 
 	cfg->lastopt = pos;
-	printf("%u) %s \n", pos, key);
 }
 
-cfg_opt_t* config_getopt(cfg_t* cfg, char* key)
+char* config_getopt(cfg_t* cfg, char* key)
 {
 	unsigned pos = get_hash(key) & cfg->mask;
 
 	if (cfg->opts[pos])
 	{
-		return cfg->opts[pos];
+		return cfg->opts[pos]->value;
 	}	
 	else
 	{
@@ -194,5 +193,7 @@ cfg_opt_t* config_getopt(cfg_t* cfg, char* key)
 
 void config_opt_destroy(cfg_opt_t* opt)
 {
+	free(opt->key);
+	free(opt->value);
 	free(opt);
 }
