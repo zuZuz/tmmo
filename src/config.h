@@ -27,6 +27,7 @@ struct cfg_opt_t
 {
 	char* key;
 	char* value;
+	cfg_opt_t* next;
 };
 
 struct cfg_t
@@ -34,16 +35,25 @@ struct cfg_t
 	size_t size;
 	unsigned mask;
 	cfg_opt_t** opts;
+	cfg_opt_t* first;
+	ssize_t lastopt;
 };
 
 cfg_t* 
 config_load(char filename[]);
 
-char* 
-config_getopt(cfg_t* cfg, char* key);
+
+void config_setopt(cfg_t* cfg, char* key, char* value);
+
+void config_opt_destroy(cfg_opt_t* opt);
+
+
+cfg_opt_t* config_getopt(cfg_t* cfg, char* key);
 
 void 
 config_destroy(cfg_t* cfg);
 
+void 
+config_save(char filename[], cfg_t* cfg);
 
 #endif

@@ -5,11 +5,12 @@
 
 /*
  *
- *	Config based on simple hash-table.
+ *	Config based on a simple linked hash-table.
  *	get_hash - Jenkins hash function
  *  https://en.wikipedia.org/wiki/Jenkins_hash_function
  *
  *	Collisions are not considered.
+ *	Sections are not considered.
  *
  */
 
@@ -48,7 +49,7 @@ static char* file_get_line(FILE* file, char buffer[], size_t size)
 	return buffer;
 }
 
-static cfg_t* config_init(size_t size)
+cfg_t* config_init(size_t size)
 {
 	cfg_t* cfg = malloc(sizeof(cfg_t));
 	if (!cfg)
@@ -65,51 +66,22 @@ static cfg_t* config_init(size_t size)
 
 	cfg->size = size;
 	cfg->mask = size - 1;
+	cfg->first = NULL;
+	cfg->lastopt = -1;
 
 	return cfg;
 }
 
-static cfg_opt_t* config_opt_init(char* key, char* value)
-{
-	cfg_opt_t* opt = malloc(sizeof(cfg_opt_t));
-	if (!opt)
-	{
-		return NULL;
-	}
-
-	opt->key = malloc(strlen(key));
-	opt->value = malloc(strlen(value));
-
-	if (!opt->key || !opt->value)
-	{
-		free(opt);
-		return NULL;
-	}
-
-	memcpy(opt->key, key, strlen(key));
-	memcpy(opt->value, value, strlen(value));
-
-	return opt;
-}
-
-void config_setopt(cfg_t* cfg, char* key, char* value)
-{
-	unsigned pos = get_hash(key) & cfg->mask;
-	cfg->opts[pos] = config_opt_init(key, value);
-}
-
-char* config_getopt(cfg_t* cfg, char* key)
-{
-	unsigned pos = get_hash(key) & cfg->mask;
-	return cfg->opts[pos]->value;
-}
-
 cfg_t* config_load(char filename[])
 {
-	char *key, *value;
+	char* key;
+	char* value;
 	char buffer[MAX_LEN];
-	cfg_t* cfg = config_init(MAX_OPTS);
-	FILE* file = fopen(filename, "r");
+	cfg_t* cfg;
+	FILE* file;
+
+	cfg = config_init(MAX_OPTS);
+	file = fopen(filename, "r");
 
 	while (!feof(file))
 	{
@@ -130,25 +102,21 @@ cfg_t* config_load(char filename[])
 
 void config_save(char filename[], cfg_t* cfg)
 {
-	size_t i;
+	cfg_opt_t* opt = cfg->first;
 	FILE* file = fopen(filename, "w");
 
-	for (i = 0; i < cfg->size; i++)
+	while (opt)
 	{
-		if (cfg->opts[i])
-		{
-			fprintf(
-				file, "%s = %s\n", 
-				cfg->opts[i]->key, 
-				cfg->opts[i]->value
-			);
-		}
-	}
-}
+		fprintf(
+			file, "%s = %s\n", 
+			opt->key, 
+			opt->value
+		);
 
-void config_opt_destroy(cfg_opt_t* opt)
-{
-	free(opt);
+		opt = opt->next;
+	}
+
+	fclose(file);
 }
 
 void config_destroy(cfg_t* cfg)
@@ -164,4 +132,67 @@ void config_destroy(cfg_t* cfg)
 	}
 
 	free(cfg);
+}
+
+cfg_opt_t* config_opt_init(char* key, char* value)
+{
+	cfg_opt_t* opt = malloc(sizeof(cfg_opt_t));
+	if (!opt)
+	{
+		return NULL;
+	}
+
+	opt->key = malloc(strlen(key));
+	opt->value = malloc(strlen(value));
+	opt->next = NULL;
+
+	if (!opt->key || !opt->value)
+	{
+		free(opt);
+		return NULL;
+	}
+
+	memcpy(opt->key, key, strlen(key));
+	memcpy(opt->value, value, strlen(value));
+
+	return opt;
+}
+
+void config_setopt(cfg_t* cfg, char* key, char* value)
+{
+	ssize_t lastopt = cfg->lastopt;
+	unsigned pos = get_hash(key) & cfg->mask;
+	cfg->opts[pos] = config_opt_init(key, value);
+
+	if (lastopt < 0)
+	{
+		cfg->first = cfg->opts[pos];
+	}
+	else
+	{
+		cfg->opts[lastopt]->next = cfg->opts[pos];
+	}
+
+
+	cfg->lastopt = pos;
+	printf("%u) %s \n", pos, key);
+}
+
+cfg_opt_t* config_getopt(cfg_t* cfg, char* key)
+{
+	unsigned pos = get_hash(key) & cfg->mask;
+
+	if (cfg->opts[pos])
+	{
+		return cfg->opts[pos];
+	}	
+	else
+	{
+		return NULL;
+	}
+}
+
+void config_opt_destroy(cfg_opt_t* opt)
+{
+	free(opt);
 }
