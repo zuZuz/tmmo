@@ -8,6 +8,7 @@
 /* constants */
 
 #define MAX_LEN 256
+#define MS 1000
 
 /* own types */
 
@@ -36,7 +37,6 @@ struct conn_t
 };
 
 /* functions */
-
 
 conn_t* 
 conn_init(char address[], port_t port, int flags);
