@@ -4,6 +4,7 @@
 #include <stdbool.h>
 
 #define MAX_LEN 256
+#define CONFIG_ERROR 1
 
 bool atob(char* str);
 

@@ -82,6 +82,11 @@ cfg_t* config_load(char filename[])
 
 	cfg = config_init(MAX_OPTS);
 	file = fopen(filename, "r");
+	if (!file)
+	{
+		config_destroy(cfg);
+		return NULL;
+	}
 
 	while (!feof(file))
 	{
