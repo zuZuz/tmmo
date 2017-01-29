@@ -1,5 +1,4 @@
 #include <stdlib.h>
-#include <pthread.h>
 #include "job_queue.h"
 
 typedef struct jqueue
@@ -58,7 +57,10 @@ job_t* jqueue_get_job(jqueue_t* head)
 
     job_queue_node_t* first = head->first_node;
     if(first == NULL)
+    {
+        pthread_mutex_unlock(head->mutex);
         return NULL;
+    }
 
     job_t* ret_job = first->qjob;
 

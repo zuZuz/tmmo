@@ -3,6 +3,7 @@
 */
 
 #include <stdbool.h>
+#include <pthread.h>
 
 #ifndef JOB_QUEUE_H
 #define JOB_QUEUE_H
