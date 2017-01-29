@@ -14,6 +14,7 @@
 #define INIT_WINDOW_HEIGHT 200
 #define INIT_WINDOW_SPACING 2
 
+void main_text_message(char* text);
 void gui_start();
 
 #endif

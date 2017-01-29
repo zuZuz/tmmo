@@ -14,7 +14,7 @@ static void init_get_ip_window()
     /*initialize widgets*/
     get_ip_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     entry_get_ip = gtk_entry_new();
-    label_get_ip = gtk_label_new("Enter server address");
+    label_get_ip = gtk_label_new("Enter server address\n\taddress:port");
     button_get_ip = gtk_button_new_with_label("Connect");
     vbox_get_ip = gtk_box_new(GTK_ORIENTATION_VERTICAL, INIT_WINDOW_SPACING);
 
@@ -97,14 +97,16 @@ static void init_main_window()
 
 static void connect_signals()
 {
+
     /*connect for main_window*/
     g_signal_connect(main_window, "destroy", G_CALLBACK(sp_destroy), NULL);
     g_signal_connect(entry_command_line, "activate", G_CALLBACK(sp_command_enter), text_main_buffer);
 
     /*connect for get_ip_window*/
     g_signal_connect(get_ip_window, "destroy", G_CALLBACK(sp_destroy), NULL);
-    g_signal_connect(button_get_ip, "clicked", G_CALLBACK(sp_check_ip), (gpointer)main_window);
-    g_signal_connect(entry_get_ip, "activate", G_CALLBACK(sp_check_ip), (gpointer)main_window);
+    g_signal_connect(get_ip_window, "hide", G_CALLBACK(sp_show_window), main_window);
+    g_signal_connect(button_get_ip, "clicked", G_CALLBACK(sp_check_ip), (gpointer)entry_get_ip);
+    g_signal_connect(entry_get_ip, "activate", G_CALLBACK(sp_check_ip), (gpointer)entry_get_ip);
 }
 
 void gui_start()
@@ -117,4 +119,9 @@ void gui_start()
     gtk_widget_show_all(get_ip_window);
 
     gtk_main();
+}
+
+void main_text_message(char* text)
+{
+    gtk_text_buffer_set_text(text_main_buffer, text, -1);
 }
