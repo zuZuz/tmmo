@@ -1,4 +1,5 @@
 #include "gui.h"
+#include "signal_proc.h"
 
 static GtkWidget *get_ip_window, *entry_get_ip, *label_get_ip, *button_get_ip, *vbox_get_ip;
 
@@ -7,25 +8,6 @@ static GtkWidget *text_view_main, *entry_command_line, *text_view_chat, *text_vi
 static GtkWidget *main_grid;
 
 static GtkTextBuffer *text_main_buffer, *text_chat_buffer, *text_location_buffer;
-
-static void sp_command_enter(GtkEntry *entry, gpointer buffer)
-{
-    gtk_text_buffer_set_text(buffer, gtk_entry_get_text(entry), -1);
-    gtk_editable_delete_text(GTK_EDITABLE(entry), 0, -1);
-
-    return;
-}
-
-static void sp_destroy()
-{
-    gtk_main_quit();
-}
-
-static void sp_init_connect()
-{
-    gtk_widget_hide(get_ip_window);
-    gtk_widget_show_all(main_window);
-}
 
 static void init_get_ip_window()
 {
@@ -49,11 +31,6 @@ static void init_get_ip_window()
 
     /*adding to get_ip_window*/
     gtk_container_add(GTK_CONTAINER(get_ip_window), vbox_get_ip);
-
-    /*connecting signals*/
-    g_signal_connect(get_ip_window, "destroy", G_CALLBACK(sp_destroy), NULL);
-    g_signal_connect(button_get_ip, "clicked", G_CALLBACK(sp_init_connect), NULL);
-    g_signal_connect(entry_get_ip, "activate", G_CALLBACK(sp_init_connect), NULL);
 }
 
 static void init_main_window()
@@ -116,16 +93,26 @@ static void init_main_window()
 
     /*adding grid to main_window*/
     gtk_container_add(GTK_CONTAINER(main_window), main_grid);
+}
 
-    /*connecting signals*/
+static void connect_signals()
+{
+    /*connect for main_window*/
     g_signal_connect(main_window, "destroy", G_CALLBACK(sp_destroy), NULL);
     g_signal_connect(entry_command_line, "activate", G_CALLBACK(sp_command_enter), text_main_buffer);
+
+    /*connect for get_ip_window*/
+    g_signal_connect(get_ip_window, "destroy", G_CALLBACK(sp_destroy), NULL);
+    g_signal_connect(button_get_ip, "clicked", G_CALLBACK(sp_check_ip), (gpointer)main_window);
+    g_signal_connect(entry_get_ip, "activate", G_CALLBACK(sp_check_ip), (gpointer)main_window);
 }
 
 void gui_start()
 {
-    init_get_ip_window();
     init_main_window();
+    init_get_ip_window();
+
+    connect_signals();
 
     gtk_widget_show_all(get_ip_window);
 

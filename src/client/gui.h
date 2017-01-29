@@ -1,5 +1,5 @@
-#ifndef PROJECT_GUI_INIT_H
-#define PROJECT_GUI_INIT_H
+#ifndef _GUI_H
+#define _GUI_H
 
 #include <gtk/gtk.h>
 
