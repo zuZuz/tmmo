@@ -7,7 +7,8 @@
 
 /* constants */
 
-#define MS 1000
+#define MAX_LEN 1024
+#define KEY_LEN 32
 
 /* own types */
 
@@ -18,19 +19,24 @@ enum flags
 
 };
 
+enum msg_type_t
+{
+    conn_test = 0,
+    text,
+	test = 1668901729,
+};
+
+typedef enum msg_type_t msg_type_t;
 typedef unsigned short port_t;
 typedef struct message_t msg_t;
 typedef struct conn_t conn_t;
 
-typedef enum message_type
-{
-	text = 0
-} message_type_t;
-
 struct message_t
 {
 	struct sockaddr_in addr;
-	unsigned char* body;
+	msg_type_t type;
+	char* body;
+	char key[KEY_LEN];
 	size_t len;
 };
 
@@ -42,25 +48,25 @@ struct conn_t
 
 /* functions */
 
-conn_t*
+conn_t* 
 conn_init(char address[], port_t port, int flags);
 
-int
+int 
 conn_set_timeout(conn_t* con, unsigned long sec);
 
 void
 conn_destroy(conn_t* con);
 
-msg_t*
-msg_init(const conn_t* con, const size_t size);
+msg_t* 
+msg_init(const conn_t* con, char key[KEY_LEN]);
 
-ssize_t
+ssize_t 
 msg_send(const conn_t* con, const msg_t* msg);
 
-msg_t*
-msg_recv(const conn_t* con, const size_t buf_size);
+msg_t* 
+msg_recv(const conn_t* con);
 
 void
 msg_destroy(msg_t* msg);
 
-#endif
+#endif 

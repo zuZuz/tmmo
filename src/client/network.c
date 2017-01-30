@@ -1,14 +1,15 @@
 #include <arpa/inet.h>
 #include <malloc.h>
 #include <string.h>
+#include <sys/time.h>
 #include <unistd.h>
 
 #include "network.h"
 
-static conn_t* conn_socket(unsigned short port)
+static conn_t* conn_socket(port_t port)
 {
 	conn_t* con = malloc(sizeof(conn_t));
-
+	
 	if (!con)
 	{
 		return NULL;
@@ -29,8 +30,8 @@ static conn_t* conn_socket(unsigned short port)
 
 static conn_t* conn_bind(conn_t* con)
 {
-	if (bind(con->socket, (struct sockaddr*)
-			&con->addr, sizeof(struct sockaddr)) == -1)
+	if (bind(con->socket, (struct sockaddr*) 
+		&con->addr, sizeof(struct sockaddr)) == -1)
 	{
 		conn_destroy(con);
 		return NULL;
@@ -66,14 +67,14 @@ conn_t* conn_init(char address[], port_t port, int flags)
 int conn_set_timeout(conn_t* con, unsigned long sec)
 {
 	struct timeval timeout;
-    timeout.tv_sec = sec;
-    timeout.tv_usec = 0;
+	timeout.tv_sec = sec;
+	timeout.tv_usec = 0;
 
 	return setsockopt(
-			con->socket,
-			SOL_SOCKET,
-			SO_RCVTIMEO,
-			&timeout, sizeof(timeout)
+		con->socket, 
+		SOL_SOCKET, 
+		SO_RCVTIMEO, 
+		&timeout, sizeof(timeout)
 	);
 }
 
@@ -83,7 +84,7 @@ void conn_destroy(conn_t* con)
 	free(con);
 }
 
-msg_t* msg_init(const conn_t* con, size_t size)
+msg_t* msg_init(const conn_t* con, char key[KEY_LEN])
 {
 	msg_t* msg = malloc(sizeof(msg_t));
 	if (!msg)
@@ -92,7 +93,7 @@ msg_t* msg_init(const conn_t* con, size_t size)
 	}
 
 	msg->len = 0;
-	msg->body = malloc(sizeof(char) * size + sizeof(message_type_t));
+	msg->body = malloc(sizeof(char) * MAX_LEN);
 	if (!msg->body)
 	{
 		free(msg);
@@ -104,6 +105,10 @@ msg_t* msg_init(const conn_t* con, size_t size)
 		msg->addr = con->addr;
 	}
 
+	if (key)
+	{
+		memcpy(msg->key, key, KEY_LEN);
+	}
 	return msg;
 }
 
@@ -111,27 +116,36 @@ ssize_t msg_send(const conn_t* con, const msg_t* msg)
 {
 	int flags = 0;
 
+	memmove(
+		msg->body + sizeof(msg_type_t) + KEY_LEN, 
+		msg->body, 
+		MAX_LEN - sizeof(msg_type_t) - KEY_LEN
+	);
+
+	memcpy(msg->body, &msg->type, sizeof(msg_type_t));
+	memcpy(msg->body + sizeof(msg_type_t), msg->key, KEY_LEN);
+
 	return sendto(
-			con->socket,
-			msg->body,
-			msg->len,
-			flags,
-			(struct sockaddr*) &msg->addr,
-			sizeof(struct sockaddr)
+		con->socket, 
+		msg->body, 
+		MAX_LEN, 
+		flags, 
+		(struct sockaddr*) &msg->addr, 
+		sizeof(struct sockaddr)
 	);
 }
 
-msg_t* msg_recv(const conn_t* con, const size_t buf_size)
+msg_t* msg_recv(const conn_t* con)
 {
 	msg_t* msg;
 	unsigned size;
 	ssize_t received;
-
+	
 	size = sizeof(struct sockaddr);
-	msg = msg_init(NULL, buf_size);
+	msg = msg_init(NULL, NULL);
 
-	received = recvfrom(con->socket, msg->body, buf_size,
-						0, (struct sockaddr*) &msg->addr, &size);
+	received = recvfrom(con->socket, msg->body, MAX_LEN,
+		0, (struct sockaddr*) &msg->addr, &size);
 
 	if (received < 0)
 	{
@@ -139,6 +153,15 @@ msg_t* msg_recv(const conn_t* con, const size_t buf_size)
 		return NULL;
 	}
 
+	memcpy(&msg->type, msg->body, sizeof(msg_type_t));
+	memcpy(msg->key, msg->body + sizeof(msg_type_t), KEY_LEN);
+	memmove(
+		msg->body, 
+		msg->body + sizeof(msg_type_t) + KEY_LEN, 
+		received - sizeof(msg_type_t) - KEY_LEN
+	);
+
+	msg->len = received;
 	return msg;
 }
 
