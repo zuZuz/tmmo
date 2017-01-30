@@ -66,14 +66,14 @@ conn_t* conn_init(char address[], port_t port, int flags)
 
 int conn_set_timeout(conn_t* con, unsigned long mcs)
 {
-	struct timeval time;
-	time.tv_sec = mcs * MS;
+	struct timeval timeout;
+	timeout.tv_sec = mcs * MS;
 
 	return setsockopt(
 		con->socket, 
 		SOL_SOCKET, 
 		SO_RCVTIMEO, 
-		&time, sizeof(time)
+		&timeout, sizeof(timeout)
 	);
 }
 
