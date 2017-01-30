@@ -2,7 +2,6 @@
 #define _CLIENT_H
 
 #define TIMEOUT 3
-#define INIT_MESSAGE "init"
 
 #include <stdbool.h>
 #include "network.h"

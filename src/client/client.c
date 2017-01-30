@@ -1,34 +1,132 @@
-#include <string.h>
 #include "client.h"
 #include "gui_interface.h"
+#include "msg_queue.h"
 
-static conn_t* connection;
+#include <stdlib.h>
+
+static pthread_t *pthr_serv_listener, *pthr_msg_processor;
+static msg_queue_t *msg_queue;
+static bool pthr_is_active;
+static conn_t *connection;
+
+static bool check_connection(conn_t* conn)
+{
+    msg_t* msg;
+
+    msg = msg_init(conn, NULL);
+    if(msg == NULL)
+        return false;
+
+    msg->type = conn_test;
+
+    msg_send(conn, msg);
+    msg_destroy(msg);
+
+    msg = msg_recv(conn);
+    if(msg == NULL)
+        return false;
+
+    msg_destroy(msg);
+
+    return true;
+}
+
+/*TODO: message processor */
+static void msg_process(msg_t* msg)
+{
+    if(msg == NULL)
+        return;
+}
+
+static void* msg_processor_routine(void* args)
+{
+    while(pthr_is_active)
+    {
+        pthread_mutex_lock(&msg_queue->mutex);
+
+        while (msg_queue_is_empty(msg_queue) && pthr_is_active) {
+            pthread_cond_wait( &(msg_queue->cond), &(msg_queue->mutex) );
+        }
+
+        pthread_mutex_unlock(&msg_queue->mutex);
+
+        msg_process(msg_queue_dequeue(msg_queue));
+    }
+
+    return NULL;
+}
+
+static void* serv_listen_routine(void* args)
+{
+    msg_t* msg;
+
+    while(pthr_is_active)
+    {
+        msg = msg_recv(connection);
+
+        if(msg == NULL)
+            continue;
+
+        msg_queue_enqueue(msg_queue, msg);
+    }
+
+    return NULL;
+}
+
+static void close_connection()
+{
+    pthr_is_active = false;
+    pthread_cond_signal(&msg_queue->cond);
+
+    pthread_join(*pthr_serv_listener, NULL);
+    pthread_join(*pthr_msg_processor, NULL);
+
+    free(pthr_msg_processor);
+    free(pthr_serv_listener);
+
+    msg_queue_destroy(msg_queue);
+
+    conn_destroy(connection);
+}
+
+static bool start_connection()
+{
+    msg_queue = msg_queue_init();
+    if(msg_queue == NULL)
+        return false;
+
+    pthr_is_active = true;
+
+    pthread_create(pthr_serv_listener, NULL, serv_listen_routine, NULL);
+    pthread_create(pthr_msg_processor, NULL, msg_processor_routine, NULL);
+
+    return true;
+}
+
 
 bool connect_to_serv(char* serv_ip, port_t port)
 {
-    msg_t* msg;
-    message_type_t m_type = text;
+    conn_t* conn;
 
-
-    if(!(connection = conn_init(serv_ip, port, NOFLAGS)))
+    if((conn = conn_init(serv_ip, port, NOFLAGS)) == NULL)
         return false;
 
-    conn_set_timeout(connection, TIMEOUT);
+    conn_set_timeout(conn, TIMEOUT);
 
-    if(!(msg = msg_init(connection, sizeof(INIT_MESSAGE) + sizeof(message_type_t))))
+    if(!check_connection(conn))
+    {
+        conn_destroy(conn);
         return false;
+    }
 
-    msg->len = sizeof(char) * strlen(INIT_MESSAGE) + sizeof(message_type_t);
-    memcpy(msg->body, &m_type, sizeof(message_type_t));
-    memcpy(msg->body + sizeof(message_type_t), INIT_MESSAGE, sizeof(INIT_MESSAGE));
+    if(connection != NULL)
+    {
+        close_connection();
+    }
 
-    msg_send(connection, msg);
-    msg_destroy(msg);
+    connection = conn;
 
-    if(!(msg = msg_recv(connection, sizeof(INIT_MESSAGE) + sizeof(message_type_t))))
-        return false;
-
-    msg_destroy(msg);
+    start_connection();
 
     return true;
 }
