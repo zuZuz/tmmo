@@ -36,7 +36,7 @@ bool msg_queue_is_empty(msg_queue_t* queue)
     }
 }
 
-void msg_queue_add(msg_queue_t* queue, msg_t* data)
+void msg_queue_enqueue(msg_queue_t* queue, msg_t* data)
 {
     msg_queue_node_t* node = malloc(sizeof(msg_queue_node_t));
     if (!node)
@@ -48,7 +48,7 @@ void msg_queue_add(msg_queue_t* queue, msg_t* data)
 
     pthread_mutex_lock(&queue->mutex);
 
-    if (!queue_is_empty(queue))
+    if (!msg_queue_is_empty(queue))
     {
         queue->last->next = node;
         queue->last = node;
@@ -62,6 +62,25 @@ void msg_queue_add(msg_queue_t* queue, msg_t* data)
     queue->count++;
     pthread_mutex_unlock(&queue->mutex);
     pthread_cond_signal(&queue->cond);
+}
+
+msg_t* msg_queue_dequeue(msg_queue_t* queue)
+{
+    msg_t* data;
+    msg_queue_node_t* node = queue->first;
+
+    if (msg_queue_is_empty(queue))
+        return NULL;
+
+    pthread_mutex_lock(&queue->mutex);
+    data = node->data;
+    queue->first = node->next;
+
+    queue->count--;
+    free(node);
+    pthread_mutex_unlock(&queue->mutex);
+
+    return data;
 }
 
 void msg_queue_destroy(msg_queue_t* queue)

@@ -24,11 +24,13 @@ struct msg_queue_t
     msg_queue_node_t* last;
 };
 
-msg_queue_t* queue_init();
+msg_queue_t* msg_queue_init();
 
 bool msg_queue_is_empty(msg_queue_t* queue);
 
-void msg_queue_add(msg_queue_t* queue, msg_t* msg);
+msg_t* msg_queue_dequeue(msg_queue_t* queue);
+
+void msg_queue_enqueue(msg_queue_t* queue, msg_t* msg);
 void msg_queue_destroy(msg_queue_t* queue);
 
 #endif
