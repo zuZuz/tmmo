@@ -76,6 +76,8 @@ void threadpool_destroy(threadpool_t *thpool)
         pthread_join( (thpool->threads)[i] , NULL );
 
     jqueue_destroy( &(thpool->jqueue) );
+    pthread_mutex_destroy( &(thpool->mutex) );
+    pthread_cond_destroy( &(thpool->cond) );
     free( thpool->threads );
     free( thpool );
 }
