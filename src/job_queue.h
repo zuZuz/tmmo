@@ -20,7 +20,7 @@ typedef struct jqueue jqueue_t;
 jqueue_t* jqueue_create(pthread_cond_t *cond, pthread_mutex_t *mutex);
 
 
-void jqueue_add_job(jqueue_t* head, void (*function)(void*), void *args);
+void jqueue_add_job(jqueue_t* head, void (*function)(void*, void*), void *arg1, void *arg2);
 job_t* jqueue_get_job(jqueue_t* head);
 bool jqueue_is_empty(jqueue_t* head);
 void jqueue_destroy(jqueue_t** head);
