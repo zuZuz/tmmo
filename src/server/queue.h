@@ -17,6 +17,7 @@ struct queue_t
 {
 	size_t count;
 	pthread_mutex_t mutex;
+	pthread_cond_t cond;
 	queue_node_t* first;
 	queue_node_t* last;
 };

@@ -25,6 +25,7 @@ queue_t* queue_init()
 	}
 
 	pthread_mutex_init(&(queue->mutex), NULL);
+	pthread_cond_init(&(queue->cond), NULL);
 	queue_init_empty(queue);
 
 	return queue;
@@ -67,6 +68,7 @@ void queue_enqueue(queue_t* queue, void* data)
 
 	queue->count++;
 	pthread_mutex_unlock(&queue->mutex);
+	pthread_cond_signal(&queue->cond);
 }
 
 void queue_dequeue(queue_t* queue, void** data)
