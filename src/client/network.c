@@ -91,7 +91,7 @@ msg_t* msg_init(const conn_t* con, size_t size)
 		return NULL;
 	}
 
-	msg->len = sizeof(char) + sizeof(message_type_t);
+	msg->len = 0;
 	msg->body = malloc(sizeof(char) * size + sizeof(message_type_t));
 	if (!msg->body)
 	{

@@ -1,9 +1,12 @@
-#ifndef _SIGNAL_PROC_H
-#define _SIGNAL_PROC_H
+#ifndef _GUI_INTERFACE_H
+#define _GUI_INTERFACE_H
+
+#include <gtk/gtk.h>
 
 void sp_command_enter(GtkEntry *entry, gpointer buffer);
 void sp_destroy();
-void sp_check_ip(GtkWidget *widget, gpointer window);
-void sp_show_window(GtkWidget *widget, gpointer show_window);
+void sp_get_ip_window_enter(GtkWidget *widget, gpointer window);
+
+void start_gui(int argc, char* argv[]);
 
 #endif

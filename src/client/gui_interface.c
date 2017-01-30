@@ -1,6 +1,50 @@
-#include <gtk/gtk.h>
+#include "gui_interface.h"
+#include "gui.h"
 #include "client.h"
-#include "signal_proc.h"
+
+extern GtkWidget *main_window, *get_ip_window;
+
+extern GtkTextBuffer *text_main_buffer, *text_chat_buffer, *text_location_buffer;
+
+static bool check_ip(const gchar* addr)
+{
+    char **addr_split, *serv_ip;
+    unsigned short serv_port;
+
+    guint64 parce_port;
+
+    if(!addr)
+        return false;
+
+    addr_split = g_strsplit(addr, ":", 2);
+
+    if(g_strv_length(addr_split) != 2)
+        return false;
+
+    parce_port = g_ascii_strtoull(addr_split[1], NULL, 0);
+    if(parce_port == 0 || parce_port > USHRT_MAX)
+        return false;
+
+    serv_ip = addr_split[0];
+    serv_port = (unsigned short) parce_port;
+
+    if(!connect_to_serv(serv_ip, serv_port))
+        return false;
+
+    g_free(addr_split);
+
+    return true;
+}
+
+void sp_get_ip_window_enter(GtkWidget *widget, gpointer entry)
+{
+    if(!check_ip(gtk_entry_get_text(GTK_ENTRY(entry))))
+        return;
+
+    gtk_widget_hide(get_ip_window);
+
+    gtk_widget_show_all(main_window);
+}
 
 void sp_command_enter(GtkEntry *entry, gpointer buffer)
 {
@@ -12,37 +56,12 @@ void sp_destroy()
     gtk_main_quit();
 }
 
-void sp_show_window(GtkWidget *widget, gpointer show_window)
+void start_gui(int argc, char* argv[])
 {
-    gtk_widget_show_all((GtkWidget*)(show_window));
-}
+    gtk_init(&argc, &argv);
+    gui_init();
 
-void sp_check_ip(GtkWidget *widget, gpointer entry)
-{
-    const gchar *addr;
-    char **addr_split, *serv_ip;
+    gtk_widget_show_all(get_ip_window);
 
-    guint64 parce_port;
-    unsigned short serv_port;
-
-    addr = gtk_entry_get_text(GTK_ENTRY(entry));
-    if(!addr)
-        return;
-
-    addr_split = g_strsplit(addr, ":", 2);
-
-    if(g_strv_length(addr_split) != 2)
-        return;
-
-    parce_port = g_ascii_strtoull(addr_split[1], NULL, 0);
-    if(parce_port == 0 || parce_port > USHRT_MAX)
-        return;
-
-    serv_ip = addr_split[0];
-    serv_port = (unsigned short) parce_port;
-
-    if(!connect_to_serv(serv_ip, serv_port))
-        return;
-
-    gtk_widget_hide(gtk_widget_get_toplevel(widget));
+    gtk_main();
 }

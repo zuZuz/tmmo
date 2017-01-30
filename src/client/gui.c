@@ -1,13 +1,15 @@
+#include <gtk/gtk.h>
+#include "gui_interface.h"
 #include "gui.h"
-#include "signal_proc.h"
 
-static GtkWidget *get_ip_window, *entry_get_ip, *label_get_ip, *button_get_ip, *vbox_get_ip;
+GtkWidget *main_window, *get_ip_window;
 
-static GtkWidget *main_window, *scrolled_window_main, *scrolled_window_chat, *scrolled_window_location;
-static GtkWidget *text_view_main, *entry_command_line, *text_view_chat, *text_view_location;
-static GtkWidget *main_grid;
+GtkTextBuffer *text_main_buffer, *text_chat_buffer, *text_location_buffer;
 
-static GtkTextBuffer *text_main_buffer, *text_chat_buffer, *text_location_buffer;
+static GtkWidget *entry_get_ip, *label_get_ip, *button_get_ip, *vbox_get_ip,
+                 *scrolled_window_main, *scrolled_window_chat, *scrolled_window_location,
+                 *text_view_main, *entry_command_line, *text_view_chat, *text_view_location,
+                 *main_grid;
 
 static void init_get_ip_window()
 {
@@ -104,24 +106,14 @@ static void connect_signals()
 
     /*connect for get_ip_window*/
     g_signal_connect(get_ip_window, "destroy", G_CALLBACK(sp_destroy), NULL);
-    g_signal_connect(get_ip_window, "hide", G_CALLBACK(sp_show_window), main_window);
-    g_signal_connect(button_get_ip, "clicked", G_CALLBACK(sp_check_ip), (gpointer)entry_get_ip);
-    g_signal_connect(entry_get_ip, "activate", G_CALLBACK(sp_check_ip), (gpointer)entry_get_ip);
+    g_signal_connect(button_get_ip, "clicked", G_CALLBACK(sp_get_ip_window_enter), (gpointer)entry_get_ip);
+    g_signal_connect(entry_get_ip, "activate", G_CALLBACK(sp_get_ip_window_enter), (gpointer)entry_get_ip);
 }
 
-void gui_start()
+void gui_init()
 {
     init_main_window();
     init_get_ip_window();
 
     connect_signals();
-
-    gtk_widget_show_all(get_ip_window);
-
-    gtk_main();
-}
-
-void main_text_message(char* text)
-{
-    gtk_text_buffer_set_text(text_main_buffer, text, -1);
 }

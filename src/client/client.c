@@ -1,6 +1,6 @@
 #include <string.h>
 #include "client.h"
-#include "gui.h"
+#include "gui_interface.h"
 
 static conn_t* connection;
 
@@ -15,20 +15,27 @@ bool connect_to_serv(char* serv_ip, port_t port)
 
     conn_set_timeout(connection, TIMEOUT);
 
-    if(!(msg = msg_init(connection, sizeof(INIT_MESSAGE) + sizeof(m_type))))
+    if(!(msg = msg_init(connection, sizeof(INIT_MESSAGE) + sizeof(message_type_t))))
         return false;
 
-    memcpy(msg->body, &m_type, sizeof(m_type));
-    memcpy(msg->body + sizeof(m_type), INIT_MESSAGE, sizeof(INIT_MESSAGE));
+    msg->len = sizeof(char) * strlen(INIT_MESSAGE) + sizeof(message_type_t);
+    memcpy(msg->body, &m_type, sizeof(message_type_t));
+    memcpy(msg->body + sizeof(message_type_t), INIT_MESSAGE, sizeof(INIT_MESSAGE));
 
     msg_send(connection, msg);
     msg_destroy(msg);
 
-    if(!(msg = msg_recv(connection, sizeof(INIT_MESSAGE) + sizeof(m_type))))
+    if(!(msg = msg_recv(connection, sizeof(INIT_MESSAGE) + sizeof(message_type_t))))
         return false;
 
-    main_text_message((char*)(msg->body + sizeof(m_type)));
     msg_destroy(msg);
 
     return true;
+}
+
+int main(int argc, char* argv[])
+{
+    start_gui(argc, argv);
+
+    return 0;
 }

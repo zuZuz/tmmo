@@ -1,7 +1,7 @@
 #ifndef _CLIENT_H
 #define _CLIENT_H
 
-#define TIMEOUT 5
+#define TIMEOUT 3
 #define INIT_MESSAGE "init"
 
 #include <stdbool.h>
