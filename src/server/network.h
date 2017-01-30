@@ -7,10 +7,6 @@
 
 #include "server.h"
 
-/* constants */
-
-#define MS 1000
-
 /* own types */
 
 enum flags
@@ -20,6 +16,13 @@ enum flags
 
 };
 
+enum msg_type_t
+{
+	text = 0,
+	test = 1668901729,
+};
+
+typedef enum msg_type_t msg_type_t;
 typedef unsigned short port_t;
 typedef struct message_t msg_t;
 typedef struct conn_t conn_t;
@@ -27,7 +30,8 @@ typedef struct conn_t conn_t;
 struct message_t
 {
 	struct sockaddr_in addr;
-	unsigned char* body;
+	msg_type_t type;
+	char* body;
 	size_t len;
 };
 
@@ -49,13 +53,13 @@ void
 conn_destroy(conn_t* con);
 
 msg_t* 
-msg_init(const conn_t* con, const size_t size);
+msg_init(const conn_t* con, msg_type_t type);
 
 ssize_t 
 msg_send(const conn_t* con, const msg_t* msg);
 
 msg_t* 
-msg_recv(const conn_t* con, const size_t buf_size);
+msg_recv(const conn_t* con);
 
 void
 msg_destroy(msg_t* msg);

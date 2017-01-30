@@ -6,7 +6,7 @@
 
 #include "network.h"
 
-static conn_t* conn_socket(unsigned short port)
+static conn_t* conn_socket(port_t port)
 {
 	conn_t* con = malloc(sizeof(conn_t));
 	
@@ -84,7 +84,7 @@ void conn_destroy(conn_t* con)
 	free(con);
 }
 
-msg_t* msg_init(const conn_t* con, size_t size)
+msg_t* msg_init(const conn_t* con, msg_type_t type)
 {
 	msg_t* msg = malloc(sizeof(msg_t));
 	if (!msg)
@@ -93,7 +93,7 @@ msg_t* msg_init(const conn_t* con, size_t size)
 	}
 
 	msg->len = 0;
-	msg->body = malloc(sizeof(char) * size);
+	msg->body = malloc(sizeof(char) * MAX_LEN);
 	if (!msg->body)
 	{
 		free(msg);
@@ -105,6 +105,7 @@ msg_t* msg_init(const conn_t* con, size_t size)
 		msg->addr = con->addr;
 	}
 
+	msg->type = type;
 	return msg;
 }
 
@@ -112,26 +113,34 @@ ssize_t msg_send(const conn_t* con, const msg_t* msg)
 {
 	int flags = 0;
 
+	memmove(
+		msg->body + sizeof(msg_type_t), 
+		msg->body, 
+		MAX_LEN - sizeof(msg_type_t)
+	);
+
+	memcpy(msg->body, &msg->type, sizeof(msg_type_t));
+
 	return sendto(
 		con->socket, 
 		msg->body, 
-		msg->len, 
+		MAX_LEN, 
 		flags, 
 		(struct sockaddr*) &msg->addr, 
 		sizeof(struct sockaddr)
 	);
 }
 
-msg_t* msg_recv(const conn_t* con, const size_t buf_size)
+msg_t* msg_recv(const conn_t* con)
 {
 	msg_t* msg;
 	unsigned size;
 	ssize_t received;
 	
 	size = sizeof(struct sockaddr);
-	msg = msg_init(NULL, buf_size);
+	msg = msg_init(NULL, MAX_LEN);
 
-	received = recvfrom(con->socket, msg->body, buf_size,
+	received = recvfrom(con->socket, msg->body, MAX_LEN,
 		0, (struct sockaddr*) &msg->addr, &size);
 
 	if (received < 0)
@@ -140,6 +149,14 @@ msg_t* msg_recv(const conn_t* con, const size_t buf_size)
 		return NULL;
 	}
 
+	memcpy(&msg->type, msg->body, sizeof(msg_type_t));
+	memmove(
+		msg->body, 
+		msg->body + sizeof(msg_type_t), 
+		received - sizeof(msg_type_t)
+	);
+
+	msg->len = received;
 	return msg;
 }
 
