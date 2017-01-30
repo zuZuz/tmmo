@@ -27,7 +27,7 @@ typedef struct conn_t conn_t;
 struct message_t
 {
 	struct sockaddr_in addr;
-	char* body;
+	unsigned char* body;
 	size_t len;
 };
 
