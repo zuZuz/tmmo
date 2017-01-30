@@ -67,7 +67,8 @@ conn_t* conn_init(char address[], port_t port, int flags)
 int conn_set_timeout(conn_t* con, unsigned long mcs)
 {
 	struct timeval timeout;
-	timeout.tv_sec = mcs * MS;
+	timeout.tv_sec = 0;
+	timeout.tv_usec = mcs * MS;
 
 	return setsockopt(
 		con->socket, 
