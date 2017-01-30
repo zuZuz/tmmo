@@ -64,11 +64,11 @@ conn_t* conn_init(char address[], port_t port, int flags)
 	return con;
 }
 
-int conn_set_timeout(conn_t* con, unsigned long mcs)
+int conn_set_timeout(conn_t* con, unsigned long sec)
 {
 	struct timeval timeout;
-	timeout.tv_sec = 0;
-	timeout.tv_usec = mcs * MS;
+	timeout.tv_sec = sec;
+	timeout.tv_usec = 0;
 
 	return setsockopt(
 		con->socket, 

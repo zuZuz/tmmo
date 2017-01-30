@@ -43,7 +43,7 @@ conn_t*
 conn_init(char address[], port_t port, int flags);
 
 int 
-conn_set_timeout(conn_t* con, unsigned long ms);
+conn_set_timeout(conn_t* con, unsigned long sec);
 
 void
 conn_destroy(conn_t* con);
