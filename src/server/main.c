@@ -33,6 +33,8 @@ int main(int argc, char* argv[])
 	/* variables */
 	cfg_t* cfg;
 	conn_t* con;
+	queue_t* incoming;
+	queue_t* outbox;
 
 	/* network */
 	size_t max_players = 100;
@@ -48,7 +50,7 @@ int main(int argc, char* argv[])
 
 	/* cli arguments parsing */
 
-	while ((opt = getopt(argc, argv, "f:d")) != -1)
+	while ((opt = getopt(argc, argv, "f:")) != -1)
 	{
 		switch (opt)
 		{
@@ -57,7 +59,7 @@ int main(int argc, char* argv[])
 				break;
 			default:
 				printf(
-					"Usage: %s [-f] [config_file]\n", 
+					"Usage: %s [-fd] [config_file]\n", 
 					argv[0]
 				);
 				break;
@@ -105,10 +107,6 @@ int main(int argc, char* argv[])
 	{
 		con = conn_init("0.0.0.0", server_port, BIND);
 	}
-
-	/*
-	 *		TODO
-	 */
 
 	/* free resources */
 
