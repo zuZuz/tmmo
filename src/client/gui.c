@@ -2,13 +2,14 @@
 #include "gui_interface.h"
 #include "gui.h"
 
-GtkWidget *main_window, *get_ip_window;
+GtkWidget *main_window, *get_ip_window,
+            *text_view_main;
 
 GtkTextBuffer *text_main_buffer, *text_chat_buffer, *text_location_buffer;
 
 static GtkWidget *entry_get_ip, *label_get_ip, *button_get_ip, *vbox_get_ip,
                  *scrolled_window_main, *scrolled_window_chat, *scrolled_window_location,
-                 *text_view_main, *entry_command_line, *text_view_chat, *text_view_location,
+                 *entry_command_line, *text_view_chat, *text_view_location,
                  *main_grid;
 
 static void init_get_ip_window()

@@ -27,6 +27,9 @@ static bool check_connection(conn_t* conn)
     if(msg == NULL)
         return false;
 
+    if(msg->type != conn_test)
+        return false;
+
     msg_destroy(msg);
 
     return true;
@@ -37,6 +40,16 @@ static void msg_process(msg_t* msg)
 {
     if(msg == NULL)
         return;
+
+    switch (msg->type)
+    {
+        case text:
+            gui_print_main_msg(msg->body, msg->len);
+            break;
+
+        default:
+            break;
+    }
 }
 
 static void* msg_processor_routine(void* args)
@@ -81,6 +94,9 @@ static bool start_connection()
         return false;
 
     pthr_is_active = true;
+
+    pthr_msg_processor = malloc(sizeof(pthread_t));
+    pthr_serv_listener = malloc(sizeof(pthread_t));
 
     pthread_create(pthr_serv_listener, NULL, serv_listen_routine, NULL);
     pthread_create(pthr_msg_processor, NULL, msg_processor_routine, NULL);
@@ -150,7 +166,7 @@ void send_user_input(const char* input)
 
 int main(int argc, char* argv[])
 {
-    start_gui(argc, argv);
+    gui_start(argc, argv);
 
     return 0;
 }

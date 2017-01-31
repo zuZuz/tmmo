@@ -4,7 +4,8 @@
 
 #include <string.h>
 
-extern GtkWidget *main_window, *get_ip_window;
+extern GtkWidget *main_window, *get_ip_window,
+                    *text_view_main;
 
 extern GtkTextBuffer *text_main_buffer, *text_chat_buffer, *text_location_buffer;
 
@@ -38,6 +39,16 @@ static bool check_ip(const gchar* addr)
     return true;
 }
 
+static void buffer_print_new_line(GtkTextBuffer* buffer, char* text, int len)
+{
+    if(gtk_text_buffer_get_char_count(buffer))
+    {
+        gtk_text_buffer_insert_at_cursor(buffer, "\n", 1);
+    }
+
+    gtk_text_buffer_insert_at_cursor(buffer, text, len);
+}
+
 void sp_get_ip_window_enter(GtkWidget *widget, gpointer entry)
 {
 
@@ -68,7 +79,17 @@ void sp_destroy()
     gtk_main_quit();
 }
 
-void start_gui(int argc, char* argv[])
+void gui_print_main_msg(char* str, int len)
+{
+    buffer_print_new_line(text_main_buffer, str, len);
+}
+
+void gui_print_chat_msg(char* str, int len)
+{
+    buffer_print_new_line(text_chat_buffer, str, len);
+}
+
+void gui_start(int argc, char* argv[])
 {
     gtk_init(&argc, &argv);
     gui_init();
