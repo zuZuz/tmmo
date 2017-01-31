@@ -12,6 +12,9 @@
 #define INIT_WINDOW_HEIGHT 200
 #define INIT_WINDOW_SPACING 2
 
+#define MIN_INPUT_LEN 3
+#define MAX_INPUT_LEN 1024
+
 void gui_init();
 
 #endif

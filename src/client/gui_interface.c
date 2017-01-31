@@ -2,6 +2,8 @@
 #include "gui.h"
 #include "client.h"
 
+#include <string.h>
+
 extern GtkWidget *main_window, *get_ip_window;
 
 extern GtkTextBuffer *text_main_buffer, *text_chat_buffer, *text_location_buffer;
@@ -38,6 +40,7 @@ static bool check_ip(const gchar* addr)
 
 void sp_get_ip_window_enter(GtkWidget *widget, gpointer entry)
 {
+
     if(!check_ip(gtk_entry_get_text(GTK_ENTRY(entry))))
         return;
 
@@ -46,13 +49,22 @@ void sp_get_ip_window_enter(GtkWidget *widget, gpointer entry)
     gtk_widget_show_all(main_window);
 }
 
-void sp_command_enter(GtkEntry *entry, gpointer buffer)
+void sp_command_enter(GtkEntry *entry)
 {
+    const char* str;
+    str = gtk_entry_get_text(entry);
 
+    if(strlen(str) < MIN_INPUT_LEN)
+        return;
+
+    send_user_input(str);
+
+    gtk_editable_delete_text(GTK_EDITABLE(entry), 0, -1);
 }
 
 void sp_destroy()
 {
+    close_connection();
     gtk_main_quit();
 }
 

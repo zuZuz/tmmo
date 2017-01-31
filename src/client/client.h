@@ -7,5 +7,7 @@
 #include "network.h"
 
 bool connect_to_serv(char* serv_ip, port_t port);
+void send_user_input(const char* input);
+void close_connection();
 
 #endif

@@ -3,6 +3,7 @@
 #include "msg_queue.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 static pthread_t *pthr_serv_listener, *pthr_msg_processor;
 static msg_queue_t *msg_queue;
@@ -73,22 +74,6 @@ static void* serv_listen_routine(void* args)
     return NULL;
 }
 
-static void close_connection()
-{
-    pthr_is_active = false;
-    pthread_cond_signal(&msg_queue->cond);
-
-    pthread_join(*pthr_serv_listener, NULL);
-    pthread_join(*pthr_msg_processor, NULL);
-
-    free(pthr_msg_processor);
-    free(pthr_serv_listener);
-
-    msg_queue_destroy(msg_queue);
-
-    conn_destroy(connection);
-}
-
 static bool start_connection()
 {
     msg_queue = msg_queue_init();
@@ -103,6 +88,24 @@ static bool start_connection()
     return true;
 }
 
+void close_connection()
+{
+    if(connection == NULL)
+        return;
+
+    pthr_is_active = false;
+    pthread_cond_signal(&msg_queue->cond);
+
+    pthread_join(*pthr_serv_listener, NULL);
+    pthread_join(*pthr_msg_processor, NULL);
+
+    free(pthr_msg_processor);
+    free(pthr_serv_listener);
+
+    msg_queue_destroy(msg_queue);
+
+    conn_destroy(connection);
+}
 
 bool connect_to_serv(char* serv_ip, port_t port)
 {
@@ -119,16 +122,30 @@ bool connect_to_serv(char* serv_ip, port_t port)
         return false;
     }
 
-    if(connection != NULL)
-    {
-        close_connection();
-    }
+    close_connection();
 
     connection = conn;
 
     start_connection();
 
     return true;
+}
+
+void send_user_input(const char* input)
+{
+    msg_t* msg;
+
+    msg = msg_init(connection, NULL);
+    if(msg == NULL)
+        return;
+
+    msg->type = text;
+    msg->len = strlen(input);
+
+    memcpy(msg->body, input, msg->len);
+
+    msg_send(connection, msg);
+    msg_destroy(msg);
 }
 
 int main(int argc, char* argv[])

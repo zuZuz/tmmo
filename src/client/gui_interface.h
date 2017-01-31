@@ -3,9 +3,9 @@
 
 #include <gtk/gtk.h>
 
-void sp_command_enter(GtkEntry *entry, gpointer buffer);
+void sp_command_enter(GtkEntry *entry);
 void sp_destroy();
-void sp_get_ip_window_enter(GtkWidget *widget, gpointer window);
+void sp_get_ip_window_enter(GtkWidget *widget, gpointer entry);
 
 void start_gui(int argc, char* argv[]);
 

@@ -51,6 +51,9 @@ static void init_main_window()
     text_view_chat = gtk_text_view_new_with_buffer(text_chat_buffer);
     text_view_location = gtk_text_view_new_with_buffer(text_location_buffer);
 
+    /*setting command entry*/
+    gtk_entry_set_max_length(GTK_ENTRY(entry_command_line), MAX_INPUT_LEN);
+
     /*setting main window*/
     gtk_window_set_title(GTK_WINDOW(main_window), "Main window");
     gtk_container_set_border_width(GTK_CONTAINER(main_window), WINDOW_BORDER_SIZE);
@@ -102,7 +105,7 @@ static void connect_signals()
 
     /*connect for main_window*/
     g_signal_connect(main_window, "destroy", G_CALLBACK(sp_destroy), NULL);
-    g_signal_connect(entry_command_line, "activate", G_CALLBACK(sp_command_enter), text_main_buffer);
+    g_signal_connect(entry_command_line, "activate", G_CALLBACK(sp_command_enter), NULL);
 
     /*connect for get_ip_window*/
     g_signal_connect(get_ip_window, "destroy", G_CALLBACK(sp_destroy), NULL);
