@@ -1,12 +1,41 @@
 #include "query_processing.h"
+#include "game_functions.h"
 #include "threadpool.h"
+#include <ctype.h>
+
+static void query_text(msg_t *msg)
+{
+    char *func_name_start = msg->body;
+    char *func_name_end;
+
+    while (isspace(*func_name_start) && (*(func_name_end) != '\0') )
+        func_name_start++;
+
+    func_name_end = func_name_start;
+
+    while ( !isspace(*(func_name_end)) && (*(func_name_end) != '\0') )
+    {
+        *(func_name_end) =  tolower( *(func_name_end) );
+        func_name_end++;
+    }
+
+    *(func_name_end) = '\0';
+
+    ( gfunc_get(func_name_start) ) (msg, func_name_end + 1);
+}
 
 static void query_processing_new(void *message, void *out_queue)
 {
-    char *data = ((msg_t*)message)->body + sizeof( message_type_t );
-    size_t length = ((msg_t*)message)->len - sizeof( message_type_t );
+    switch( ((msg_t*)message) -> type )
+    {
+        case text: query_text( (msg_t*)message );
+            break;
 
-    //TODO: process
+        case conn_test:
+            break;
+
+        default: return;
+    }
 
     queue_enqueue( (queue_t*)out_queue, message);
     pthread_cond_signal( &((queue_t*)out_queue)->cond );
@@ -25,10 +54,10 @@ static void query_processing_start(jqueue_t *jqueue, qprocess_args_t *args)
         while(queue_is_empty(in_queue) && !*(args->is_terminated) )
             pthread_cond_wait( &(in_queue->cond), &(in_queue->mutex) );
 
-        queue_dequeue(in_queue, (void*)&message);
-
 
         pthread_mutex_unlock( &(in_queue->mutex) );
+
+        queue_dequeue(in_queue, (void*)&message);
 
         if(message != NULL)
             jqueue_add_job(jqueue, query_processing_new, message, args -> out);
@@ -36,6 +65,7 @@ static void query_processing_start(jqueue_t *jqueue, qprocess_args_t *args)
     }
 
 }
+
 
 
 void* query_processing(void *arg)
@@ -48,5 +78,3 @@ void* query_processing(void *arg)
 
     return NULL;
 }
-
-

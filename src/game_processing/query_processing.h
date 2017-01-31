@@ -1,16 +1,15 @@
-#include "queue.h"
-#include "network.h"
+/*
+ * Processing requests from the queue "in" and adding the responses to the queue "out".
+ */
+
+#include "../server/queue.h"
+#include "../server/network.h"
 
 #ifndef QUERY_PROCESSING_H
 #define QUERY_PROCESSING_H
 
+//the number of threads in the thread pool
 #define THREADS_CNT 5
-
-typedef enum message_type
-{
-    text = 0
-
-} message_type_t;
 
 typedef struct qprocess_args
 {
