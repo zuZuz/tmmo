@@ -1,44 +1,44 @@
 #include "query_processing.h"
 #include "game_functions.h"
 #include "threadpool.h"
-#include <ctype.h>
+#include "shared_funcs.h"
 
-static void query_text(msg_t *msg)
+static bool query_text(msg_t *msg)
 {
-    char *func_name_start = msg->body;
-    char *func_name_end;
+    char *pos = msg->body;
+    char *func_name;
 
-    while (isspace(*func_name_start) && (*(func_name_end) != '\0') )
-        func_name_start++;
+    func_name = get_word(&pos);
 
-    func_name_end = func_name_start;
-
-    while ( !isspace(*(func_name_end)) && (*(func_name_end) != '\0') )
+    if(func_name != NULL)
     {
-        *(func_name_end) =  tolower( *(func_name_end) );
-        func_name_end++;
+        ( gfunc_get(func_name) ) (msg, pos);
+        return true;
     }
-
-    *(func_name_end) = '\0';
-
-    ( gfunc_get(func_name_start) ) (msg, func_name_end + 1);
+    else
+        return false;
 }
 
 static void query_processing_new(void *message, void *out_queue)
 {
+    bool have_asnw;
+
     switch( ((msg_t*)message) -> type )
     {
-        case text: query_text( (msg_t*)message );
+        case text: have_asnw = query_text( (msg_t*)message );
             break;
 
-        case conn_test:
+        case conn_test: have_asnw = true;
             break;
 
         default: return;
     }
 
-    queue_enqueue( (queue_t*)out_queue, message);
-    pthread_cond_signal( &((queue_t*)out_queue)->cond );
+    if(have_asnw == true)
+    {
+        queue_enqueue((queue_t *) out_queue, message);
+        pthread_cond_signal(&((queue_t *) out_queue)->cond);
+    }
 }
 
 static void query_processing_start(jqueue_t *jqueue, qprocess_args_t *args)
@@ -65,7 +65,6 @@ static void query_processing_start(jqueue_t *jqueue, qprocess_args_t *args)
     }
 
 }
-
 
 
 void* query_processing(void *arg)
