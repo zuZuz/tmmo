@@ -18,13 +18,17 @@ static void queue_init_empty(queue_t* queue)
 
 queue_t* queue_init()
 {
+	pthread_mutexattr_t *mutex_attr = malloc( sizeof(pthread_mutexattr_t) );
 	queue_t* queue = malloc(sizeof(queue_t));
 	if (!queue)
 	{
 		return NULL;
 	}
 
-	pthread_mutex_init(&(queue->mutex), NULL);
+	pthread_mutexattr_init(mutex_attr);
+	pthread_mutexattr_settype(mutex_attr, PTHREAD_MUTEX_RECURSIVE);
+	pthread_mutex_init( &(queue->mutex), mutex_attr);
+
 	pthread_cond_init(&(queue->cond), NULL);
 	queue_init_empty(queue);
 

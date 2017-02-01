@@ -84,7 +84,7 @@ void conn_destroy(conn_t* con)
 	free(con);
 }
 
-msg_t* msg_init(const conn_t* con, msg_type_t type)
+msg_t* msg_init(const conn_t* con, char key[KEY_LEN])
 {
 	msg_t* msg = malloc(sizeof(msg_t));
 	if (!msg)
@@ -93,39 +93,27 @@ msg_t* msg_init(const conn_t* con, msg_type_t type)
 	}
 
 	msg->len = 0;
-	msg->body = malloc(sizeof(char) * MAX_LEN);
-	if (!msg->body)
-	{
-		free(msg);
-		return NULL;
-	}
 
 	if (con)
 	{
 		msg->addr = con->addr;
 	}
 
-	msg->type = type;
+	if (key)
+	{
+		memcpy(msg->key, key, KEY_LEN);
+	}
+
 	return msg;
 }
 
 ssize_t msg_send(const conn_t* con, const msg_t* msg)
 {
-	int flags = 0;
-
-	memmove(
-		msg->body + sizeof(msg_type_t), 
-		msg->body, 
-		MAX_LEN - sizeof(msg_type_t)
-	);
-
-	memcpy(msg->body, &msg->type, sizeof(msg_type_t));
-
 	return sendto(
-		con->socket, 
-		msg->body, 
-		MAX_LEN, 
-		flags, 
+		con->socket,
+		&msg->type, 
+		sizeof(msg_t) - sizeof(struct sockaddr), 
+		NOFLAGS, 
 		(struct sockaddr*) &msg->addr, 
 		sizeof(struct sockaddr)
 	);
@@ -138,10 +126,16 @@ msg_t* msg_recv(const conn_t* con)
 	ssize_t received;
 	
 	size = sizeof(struct sockaddr);
-	msg = msg_init(NULL, MAX_LEN);
+	msg = msg_init(NULL, NULL);
 
-	received = recvfrom(con->socket, msg->body, MAX_LEN,
-		0, (struct sockaddr*) &msg->addr, &size);
+	received = recvfrom(
+		con->socket, 
+		&msg->type, 
+		sizeof(msg_t) - sizeof(struct sockaddr),
+		NOFLAGS, 
+		(struct sockaddr*) &msg->addr, 
+		&size
+	);
 
 	if (received < 0)
 	{
@@ -149,19 +143,10 @@ msg_t* msg_recv(const conn_t* con)
 		return NULL;
 	}
 
-	memcpy(&msg->type, msg->body, sizeof(msg_type_t));
-	memmove(
-		msg->body, 
-		msg->body + sizeof(msg_type_t), 
-		received - sizeof(msg_type_t)
-	);
-
-	msg->len = received;
 	return msg;
 }
 
 void msg_destroy(msg_t* msg)
 {
-	free(msg->body);
 	free(msg);
 }
