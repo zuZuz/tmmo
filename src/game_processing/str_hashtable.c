@@ -117,18 +117,15 @@ void str_hashtable_destroy(str_hashtable_t *hsht)
     str_hashtable_node_t *temp;
     for (int i = 0; i < hsht->size; i++)
     {
-        node = hsht->head + i;
+        node = (hsht->head + i)->next;
 
-        do
+        while(node != NULL)
         {
             temp = node->next;
-            if (temp != NULL)
-            {
-                node = node->next;
-                free(temp);
-            }
+            free(node);
+            node = temp;
+        }
 
-        } while(temp != NULL);
     }
 
     free(hsht->head);
