@@ -68,3 +68,8 @@ void (* gfunc_get(char *func_name) )(msg_t*, char*)
     else
         return gfunc_dntknow;
 }
+
+void gfunc_destroy()
+{
+    str_hashtable_destroy(funcs_hashtable);
+}

@@ -109,3 +109,28 @@ void* str_hashtable_get(str_hashtable_t *hsht, char *str)
     return NULL;
 
 }
+
+void str_hashtable_destroy(str_hashtable_t *hsht)
+{
+    str_hashtable_node_t *node;
+
+    str_hashtable_node_t *temp;
+    for (int i = 0; i < hsht->size; i++)
+    {
+        node = hsht->head + i;
+
+        do
+        {
+            temp = node->next;
+            if (temp != NULL)
+            {
+                node = node->next;
+                free(temp);
+            }
+
+        } while(temp != NULL);
+    }
+
+    free(hsht->head);
+    free(hsht);
+}

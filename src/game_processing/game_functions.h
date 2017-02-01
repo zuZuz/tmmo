@@ -16,4 +16,6 @@ bool gfunc_init(char **err);
 
 void (* gfunc_get(char *func_name) )(msg_t*, char*);
 
+void gfunc_destroy();
+
 #endif //GAME_FUNCTIONS_H
