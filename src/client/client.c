@@ -2,13 +2,12 @@
 #include "gui_interface.h"
 #include "msg_queue.h"
 
-#include <stdlib.h>
 #include <string.h>
 
-static pthread_t *pthr_serv_listener, *pthr_msg_processor;
+static pthread_t pthr_serv_listener, pthr_msg_processor;
 static msg_queue_t *msg_queue;
+static conn_t *actv_conn;
 static bool pthr_is_active;
-static conn_t *connection;
 
 static bool check_connection(conn_t* conn)
 {
@@ -35,7 +34,6 @@ static bool check_connection(conn_t* conn)
     return true;
 }
 
-/*TODO: message processor */
 static void msg_process(msg_t* msg)
 {
     if(msg == NULL)
@@ -44,7 +42,7 @@ static void msg_process(msg_t* msg)
     switch (msg->type)
     {
         case text:
-            gui_print_main_msg(msg->body, msg->len);
+            gui_print_main_msg(msg->body);
             break;
 
         default:
@@ -76,17 +74,21 @@ static void* serv_listen_routine(void* args)
 
     while(pthr_is_active)
     {
-        msg = msg_recv(connection);
+        pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
+
+        msg = msg_recv(actv_conn);
 
         if(msg == NULL)
             continue;
 
+        pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
         msg_queue_enqueue(msg_queue, msg);
     }
 
     return NULL;
 }
 
+/*init queue and run threads*/
 static bool start_connection()
 {
     msg_queue = msg_queue_init();
@@ -95,72 +97,68 @@ static bool start_connection()
 
     pthr_is_active = true;
 
-    pthr_msg_processor = malloc(sizeof(pthread_t));
-    pthr_serv_listener = malloc(sizeof(pthread_t));
-
-    pthread_create(pthr_serv_listener, NULL, serv_listen_routine, NULL);
-    pthread_create(pthr_msg_processor, NULL, msg_processor_routine, NULL);
+    pthread_create(&pthr_serv_listener, NULL, serv_listen_routine, NULL);
+    pthread_create(&pthr_msg_processor, NULL, msg_processor_routine, NULL);
 
     return true;
 }
 
 void close_connection()
 {
-    if(connection == NULL)
-        return;
-
     pthr_is_active = false;
+
     pthread_cond_signal(&msg_queue->cond);
 
-    pthread_join(*pthr_serv_listener, NULL);
-    pthread_join(*pthr_msg_processor, NULL);
+    pthread_cancel(pthr_serv_listener);
 
-    free(pthr_msg_processor);
-    free(pthr_serv_listener);
+    pthread_join(pthr_serv_listener, NULL);
+    pthread_join(pthr_msg_processor, NULL);
+
+    conn_destroy(actv_conn);
 
     msg_queue_destroy(msg_queue);
-
-    conn_destroy(connection);
 }
 
 bool connect_to_serv(char* serv_ip, port_t port)
 {
-    conn_t* conn;
+    conn_t* check_conn;
 
-    if((conn = conn_init(serv_ip, port, NOFLAGS)) == NULL)
+    if((check_conn = conn_init(serv_ip, port, NOFLAGS)) == NULL)
         return false;
 
-    conn_set_timeout(conn, TIMEOUT);
+    conn_set_timeout(check_conn, CONN_CHECK_TIMEOUT);
 
-    if(!check_connection(conn))
+    if(!check_connection(check_conn))
     {
-        conn_destroy(conn);
+        conn_destroy(check_conn);
         return false;
     }
 
-    close_connection();
+    if(actv_conn != NULL)
+        close_connection();
 
-    connection = conn;
+    actv_conn = check_conn;
+    conn_set_timeout(actv_conn, 0);
 
     start_connection();
 
     return true;
 }
 
-void send_user_input(const char* input)
+void send_user_input(const char* input, size_t len)
 {
     msg_t* msg;
 
-    msg = msg_init(connection, NULL);
+    msg = msg_init(actv_conn, NULL);
     if(msg == NULL)
         return;
 
     msg->type = text;
-    msg->len = strlen(input);
+    msg->len = len;
 
     memcpy(msg->body, input, msg->len);
 
-    msg_send(connection, msg);
+    msg_send(actv_conn, msg);
     msg_destroy(msg);
 }
 
