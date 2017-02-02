@@ -10,8 +10,8 @@ void sp_destroy_main_window();
 void sp_destroy_init_window();
 void sp_ip_enter(GtkWidget *widget, gpointer entry);
 
-void gui_print_main_msg(char* str, int len);
-void gui_print_chat_msg(char* str, int len);
+void gui_print_main_msg(char* str);
+void gui_print_chat_msg(char* str);
 void gui_start(int argc, char* argv[]);
 
 #endif

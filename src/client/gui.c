@@ -1,4 +1,3 @@
-#include <gtk/gtk.h>
 #include "gui_interface.h"
 #include "gui.h"
 
@@ -16,6 +15,7 @@ static void init_init_window()
 
     /*setting get_ip window*/
     gtk_window_set_title(GTK_WINDOW(init_win->window), "Enter IP window");
+    gtk_window_set_position(GTK_WINDOW(init_win->window), GTK_WIN_POS_CENTER);
     gtk_container_set_border_width(GTK_CONTAINER(init_win->window), WINDOW_BORDER_SIZE);
     gtk_window_set_resizable(GTK_WINDOW(init_win->window), FALSE);
     gtk_widget_set_size_request(init_win->window, INIT_WINDOW_WIDTH, INIT_WINDOW_HEIGHT);
@@ -50,6 +50,7 @@ static void init_main_window()
 
     /*setting main window*/
     gtk_window_set_title(GTK_WINDOW(main_win->window), "Main window");
+    gtk_window_set_position(GTK_WINDOW(main_win->window), GTK_WIN_POS_CENTER);
     gtk_container_set_border_width(GTK_CONTAINER(main_win->window), WINDOW_BORDER_SIZE);
 
     /*setting main text window*/

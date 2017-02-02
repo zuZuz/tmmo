@@ -14,6 +14,7 @@
 
 #define MAX_INPUT_LEN 1024
 
+#include <gtk/gtk.h>
 
 typedef struct text_win_t {
     GtkTextBuffer *buf;

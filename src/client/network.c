@@ -1,5 +1,6 @@
 #include <arpa/inet.h>
 #include <malloc.h>
+#include <netdb.h>
 #include <string.h>
 #include <sys/time.h>
 #include <unistd.h>
@@ -42,6 +43,7 @@ static conn_t* conn_bind(conn_t* con)
 
 conn_t* conn_init(char address[], port_t port, int flags)
 {
+    struct hostent* h;
     conn_t* con = conn_socket(port);
 
     if (!con)
@@ -49,11 +51,14 @@ conn_t* conn_init(char address[], port_t port, int flags)
         return NULL;
     }
 
-    if (inet_aton(address, &con->addr.sin_addr) == 0)
+    h = gethostbyname(address);
+    if (!h)
     {
         conn_destroy(con);
         return NULL;
     }
+
+    con->addr.sin_addr = *(struct in_addr*) h->h_addr_list[0];
 
     if ((flags & BIND) && !conn_bind(con))
     {
@@ -102,6 +107,10 @@ msg_t* msg_init(const conn_t* con, char key[KEY_LEN])
     if (key)
     {
         memcpy(msg->key, key, KEY_LEN);
+    }
+    else
+    {
+        memset(msg->key, 0, KEY_LEN);
     }
 
     return msg;

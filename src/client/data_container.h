@@ -1,8 +1,13 @@
-//
-// Created by danya on 02.02.17.
-//
+#ifndef DATA_CONTAINER_H
+#define DATA_CONTAINER_H
 
-#ifndef TMMO_DATA_CONTAINER_H
-#define TMMO_DATA_CONTAINER_H
+#include "gui.h"
 
-#endif //TMMO_DATA_CONTAINER_H
+typedef struct print_data{
+    text_win_t *win;
+    char *str;
+}print_data;
+
+print_data* print_data_new(text_win_t* win, char *str);
+
+#endif
