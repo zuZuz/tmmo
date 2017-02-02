@@ -6,8 +6,9 @@
 #define MIN_INPUT_LEN 3
 
 void sp_command_enter(GtkEntry *entry);
-void sp_destroy();
-void sp_get_ip_window_enter(GtkWidget *widget, gpointer entry);
+void sp_destroy_main_window();
+void sp_destroy_init_window();
+void sp_ip_enter(GtkWidget *widget, gpointer entry);
 
 void gui_print_main_msg(char* str, int len);
 void gui_print_chat_msg(char* str, int len);
