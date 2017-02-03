@@ -1,16 +1,10 @@
 #ifndef _NETWORK_H_
 #define _NETWORK_H_
 
-/* includes */
-
 #include <arpa/inet.h>
 
-/* constants */
-
 #define MAX_LEN 1024
-#define KEY_LEN 32
-
-/* own types */
+#define KEY_LEN 33		// 32 + 1 for \0
 
 enum flags
 {
@@ -23,7 +17,6 @@ enum msg_type_t
 {
     conn_test = 0,
     text,
-	test = 1668901729,
 };
 
 typedef enum msg_type_t msg_type_t;
@@ -35,9 +28,9 @@ struct msg_t
 {
 	struct sockaddr_in addr;
 	msg_type_t type;
+	unsigned char key[KEY_LEN];
 	size_t len;
-	char key[KEY_LEN];
-	char body[MAX_LEN];
+	unsigned char body[MAX_LEN];
 };
 
 struct conn_t
@@ -45,8 +38,6 @@ struct conn_t
 	struct sockaddr_in addr;
 	int socket;
 };
-
-/* functions */
 
 conn_t* 
 conn_init(char address[], port_t port, int flags);

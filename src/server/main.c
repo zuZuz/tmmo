@@ -1,12 +1,13 @@
 #include <getopt.h>
+#include <netdb.h>
 
 #include "config.h"
 #include "network.h"
-#include "query_processing.h"
+#include "../game_processing/query_processing.h"
 #include "queue.h"
 #include "server.h"
 #include "threads.h"
-#include "game_functions.h"
+#include "../game_processing/game_functions.h"
 
 cfg_t* config_default()
 {
@@ -31,6 +32,7 @@ int main(int argc, char* argv[])
 	conn_t* con;
 	queue_t* in_queue;
 	queue_t* out_queue;
+	char* err;
 
 	/* threads */
 	pthread_t receiver;
@@ -39,7 +41,7 @@ int main(int argc, char* argv[])
 
 	/* network */
 	size_t max_players = 100;
-	unsigned short server_port = 11000;
+	unsigned short server_port = 27015;
 
 	/* shard */
 	bool shard_enabled = false;
@@ -109,7 +111,12 @@ int main(int argc, char* argv[])
 
 	in_queue = queue_init();
 	out_queue = queue_init();
-	gfunc_init();
+
+	if (!gfunc_init(&err))
+	{
+		fprintf(stderr, "%s \n", err);
+		return EXIT_ERROR;
+	}
 
 	thread_arg recvr_arg = {in_queue, con, &is_terminated};
 	thread_arg sender_arg = {out_queue, con, &is_terminated};

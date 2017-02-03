@@ -14,15 +14,15 @@
  *
  */
 
-static unsigned get_hash(char *key)
+static unsigned get_hash(char str[])
 {
     unsigned hash; 
     size_t i;
-    size_t len = strlen(key);
+    size_t len = strlen(str);
 
     for(hash = i = 0; i < len; ++i)
     {
-        hash += key[i];
+        hash += str[i];
         hash += (hash << 10);
         hash ^= (hash >> 6);
     }
