@@ -1,25 +1,14 @@
 #include <getopt.h>
-#include <netdb.h>
 
 #include "config.h"
+#include "crypto.h"
 #include "network.h"
-#include "../game_processing/query_processing.h"
 #include "queue.h"
 #include "server.h"
 #include "threads.h"
+
+#include "../game_processing/query_processing.h"
 #include "../game_processing/game_functions.h"
-
-cfg_t* config_default()
-{
-	cfg_t* cfg = config_init(MAX_OPTS);
-
-	config_setopt(cfg, "max_players", "100");
-	config_setopt(cfg, "server_port", "27015");
-	config_setopt(cfg, "shard_enabled", "false");
-
-	config_save("server.conf", cfg);
-	return cfg;
-}
 
 int main(int argc, char* argv[])
 {
@@ -75,13 +64,6 @@ int main(int argc, char* argv[])
 	if (!cfg)
 	{
 		cfg = config_default();
-		fprintf(stderr, "Couldn't open configuration file %s.\n", 
-			config_file);
-	}
-	else
-	{
-		fprintf(stdout, "Loaded configuration from %s.\n", 
-			config_file);
 	}
 
 	/* config parsing */
@@ -101,12 +83,7 @@ int main(int argc, char* argv[])
 	con = conn_init("0.0.0.0", server_port, BIND);
 	if (!con)
 	{
-		fprintf(stderr, "Couldn't connect to port %d.\n", server_port);
 		return EXIT_ERROR;
-	}
-	else
-	{
-		fprintf(stdout, "Started at port %d.\n", server_port);
 	}
 
 	in_queue = queue_init();
@@ -126,6 +103,8 @@ int main(int argc, char* argv[])
     pthread_create(&receiver, NULL, receiver_thread, &recvr_arg);
     pthread_create(&sender, NULL, sender_thread, &sender_arg);
     pthread_create(&processer, NULL, query_processing, &pr_arg);
+
+    is_terminated = true;
 
     pthread_join(receiver, NULL);
     pthread_join(sender, NULL);

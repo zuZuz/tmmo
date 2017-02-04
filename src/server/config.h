@@ -42,6 +42,9 @@ config_save(char filename[], cfg_t* cfg);
 void 
 config_destroy(cfg_t* cfg);
 
+cfg_t*
+config_default();
+
 
 cfg_opt_t* 
 config_opt_init(char* key, char* value);

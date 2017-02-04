@@ -202,3 +202,17 @@ void config_opt_destroy(cfg_opt_t* opt)
 	free(opt->value);
 	free(opt);
 }
+
+/* set up default values here */ 
+
+cfg_t* config_default()
+{
+	cfg_t* cfg = config_init(MAX_OPTS);
+
+	config_setopt(cfg, "max_players", "100");
+	config_setopt(cfg, "server_port", "27015");
+	config_setopt(cfg, "shard_enabled", "false");
+
+	config_save("server.conf", cfg);
+	return cfg;
+}

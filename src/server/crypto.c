@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -24,8 +25,8 @@ static char sid[] = {
 
 /* 
  *
- *	simpliest hash-function rot13
- *	and basic xor encrypt function
+ *	hash-function rot13 and
+ *	basic xor crypto function
  *
  */
 
@@ -60,6 +61,11 @@ void crypto_gen_key(char key[], size_t len)
 	}
 
 	key[len] = 0;
+}
+
+bool crypto_key_is_empty(char key[])
+{
+	return key[0] == '\0';
 }
 
 void crypto_encrypt(char str[], char key[])

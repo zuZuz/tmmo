@@ -28,9 +28,9 @@ struct msg_t
 {
 	struct sockaddr_in addr;
 	msg_type_t type;
-	unsigned char key[KEY_LEN];
+	char key[KEY_LEN];
 	size_t len;
-	unsigned char body[MAX_LEN];
+	char body[MAX_LEN];
 };
 
 struct conn_t
