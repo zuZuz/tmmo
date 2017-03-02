@@ -85,6 +85,8 @@ void jqueue_destroy(jqueue_t** head)
 {
     job_queue_node_t* current_node = (*head)->first_node;
 
+    pthread_mutex_lock((*head)->mutex);
+
     while(current_node != NULL)
     {
         free(current_node->qjob);
@@ -92,6 +94,8 @@ void jqueue_destroy(jqueue_t** head)
         free(current_node);
         current_node = (*head)->first_node;
     }
+
+    pthread_mutex_unlock((*head)->mutex);
 
     free(*head);
     *head = NULL;

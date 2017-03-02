@@ -48,7 +48,7 @@ bool gfunc_init(char **err)
 
     for(int i = 0; i < FUNCS_CNT; i++)
     {
-        if( !str_hashtable_add(funcs_hashtable, funcs[i].name, funcs[i].func) )
+        if( !str_hashtable_add(funcs_hashtable, funcs[i].name, funcs[i].func, NULL) )
         {
             *err = funcs[i].name;
             return false;
