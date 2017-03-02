@@ -26,6 +26,34 @@ static ground_type_t nearest_ground(map_point_t *point, map_point_t *sites, size
     return nearest_ground;
 }
 
+void set_region(map_point_t *point, map_point_t *map, size_t size_x, size_t size_y, size_t *regions_num)
+{
+    for(int y = point->y - 1; y <= point->y + 1; y++)
+    {
+        if(y < 0  ||  y >= size_y)
+            continue;
+
+        for(int x = point->x - 1; x <= point->x + x; x++)
+        {
+            if( x < 0  ||  x >= size_x  ||  (point->x == x && point->y == y) )
+                continue;
+
+            if((map + y*size_x + x)->x == x  &&  (map + y*size_x + x)->y == y)
+            {
+                if((map + y*size_x + x)->ground == point->ground)
+                {
+                    point->region = (map + y*size_x + x)->region;
+                    return;
+                }
+
+            }
+        }
+    }
+
+    point -> region = regions_num[point->ground]++;
+
+}
+
 map_point_t* map_generation(size_t factor, size_t size_x, size_t size_y, ground_type_t bound, size_t indent)
 {
     srand(time(NULL));
@@ -34,6 +62,10 @@ map_point_t* map_generation(size_t factor, size_t size_x, size_t size_y, ground_
     map_point_t *map = malloc( sizeof(map_point_t) * size_x * size_y );
     size_t sites_cnt = factor * GROUND_TYPE_CNT;
     map_point_t *sites = malloc( (sites_cnt + 8) * sizeof(map_point_t) );
+    size_t regions_num[GROUND_TYPE_CNT];
+
+    for(size_t i = 0; i < GROUND_TYPE_CNT; i++)
+        regions_num[i] = 0;
 
     size_t i;
 
@@ -77,6 +109,8 @@ map_point_t* map_generation(size_t factor, size_t size_x, size_t size_y, ground_
 
             (map + y*size_x + x)->child_object = nothing;
             (map + y*size_x + x)->surface = empty;
+
+            set_region(map + y*size_x + x, map, size_x, size_y, regions_num);
         }
     }
 

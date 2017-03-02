@@ -25,6 +25,10 @@ void add_on_map(FILE *fmap, FILE *fbuild)
     map = malloc( msize_y * msize_x * sizeof(map_point_t) );
     fread(map, msize_x * msize_y * sizeof(map_point_t), 1, fmap);
 
+    printf("region: ");
+    while (scanf("%zu", &region) == 0);
+
+
     do
     {
         have_place = true;

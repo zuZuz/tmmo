@@ -35,7 +35,8 @@ typedef struct map_point
     ground_type_t ground;
     surface_type_t surface;
     object_type_t child_object;
-    long int name_id;
+    int name_id;
+    size_t region;
 } map_point_t;
 #pragma pack(pop)
 
