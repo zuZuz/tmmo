@@ -1,6 +1,7 @@
 #include "map.h"
 #include <float.h>
 #include <time.h>
+#include "../server/queue.h"
 
 static double sum_sq(double x, double y)
 {
@@ -26,33 +27,65 @@ static ground_type_t nearest_ground(map_point_t *point, map_point_t *sites, size
     return nearest_ground;
 }
 
-void set_region(map_point_t *point, map_point_t *map, size_t size_x, size_t size_y, size_t *regions_num)
+
+void set_region(map_point_t *new_point, map_point_t *map, size_t size_x, size_t size_y, size_t *regions_num)
 {
-    for(int y = point->y - 1; y <= point->y + 1; y++)
+    queue_t *points = queue_init();
+    map_point_t *point = new_point;
+    int region = regions_num[point->ground]++;
+    ground_type_t ground = point->ground;
+    int x,y;
+
+    point->region = region;
+    queue_enqueue(points, point);
+    do
     {
-        if(y < 0  ||  y >= size_y)
-            continue;
+        queue_dequeue(points, (void*)&point);
 
-        for(int x = point->x - 1; x <= point->x + x; x++)
+        x = point->x;
+        if( (y = point->y - 1) >= 0)
         {
-            if( x < 0  ||  x >= size_x  ||  (point->x == x && point->y == y) )
-                continue;
-
-            if((map + y*size_x + x)->x == x  &&  (map + y*size_x + x)->y == y)
+            if ((map + y * size_x + x)->ground == ground && (map + y * size_x + x)->region == -1)
             {
-                if((map + y*size_x + x)->ground == point->ground)
-                {
-                    point->region = (map + y*size_x + x)->region;
-                    return;
-                }
-
+                (map + y * size_x + x)->region = region;
+                queue_enqueue(points, (map + y * size_x + x));
             }
         }
-    }
 
-    point -> region = regions_num[point->ground]++;
+        if( (y = point->y + 1) < size_y)
+        {
+            if ((map + y * size_x + x)->ground == ground && (map + y * size_x + x)->region == -1)
+            {
+                (map + y * size_x + x)->region = region;
+                queue_enqueue(points, (map + y * size_x + x));
+            }
+        }
+
+        y = point->y;
+        if( (x = point->x - 1) >= 0)
+        {
+            if ((map + y * size_x + x)->ground == ground && (map + y * size_x + x)->region == -1)
+            {
+                (map + y * size_x + x)->region = region;
+                queue_enqueue(points, (map + y * size_x + x));
+            }
+        }
+        if( (x = point->x + 1) < size_x)
+        {
+            if ((map + y * size_x + x)->ground == ground && (map + y * size_x + x)->region == -1)
+            {
+                (map + y * size_x + x)->region = region;
+                queue_enqueue(points, (map + y * size_x + x));
+            }
+        }
+
+    } while(!queue_is_empty(points));
+
+    queue_destroy(points, NULL);
 
 }
+
+
 
 map_point_t* map_generation(size_t factor, size_t size_x, size_t size_y, ground_type_t bound, size_t indent)
 {
@@ -109,9 +142,19 @@ map_point_t* map_generation(size_t factor, size_t size_x, size_t size_y, ground_
 
             (map + y*size_x + x)->child_object = nothing;
             (map + y*size_x + x)->surface = empty;
-
-            set_region(map + y*size_x + x, map, size_x, size_y, regions_num);
+            (map + y*size_x + x)->region = -1;
         }
+    }
+
+    for (size_t y = 0; y < size_y; y++)
+    {
+
+        for (size_t x = 0; x < size_x; x++)
+        {
+            if((map + y*size_x + x)->ground != bound  &&  (map + y*size_x + x)->region == -1)
+                set_region((map + y*size_x + x), map, size_x, size_y, regions_num);
+        }
+
     }
 
     free(sites);
