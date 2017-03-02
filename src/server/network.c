@@ -5,6 +5,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 
+#include "crypto.h"
 #include "network.h"
 
 static conn_t* conn_socket(port_t port)
@@ -116,8 +117,10 @@ msg_t* msg_init(const conn_t* con, char key[KEY_LEN])
 	return msg;
 }
 
-ssize_t msg_send(const conn_t* con, const msg_t* msg)
+ssize_t msg_send(const conn_t* con, msg_t* msg)
 {
+	//crypto_encrypt(msg->body, msg->key);
+
 	return sendto(
 		con->socket,
 		&msg->type, 
@@ -152,6 +155,7 @@ msg_t* msg_recv(const conn_t* con)
 		return NULL;
 	}
 
+	//crypto_decrypt(msg->body, msg->key);
 	return msg;
 }
 

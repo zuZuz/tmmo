@@ -13,3 +13,4 @@ bool atob(char* str)
 
 	return false;
 }
+

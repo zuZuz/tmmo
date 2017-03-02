@@ -52,7 +52,7 @@ msg_t*
 msg_init(const conn_t* con, char key[KEY_LEN]);
 
 ssize_t 
-msg_send(const conn_t* con, const msg_t* msg);
+msg_send(const conn_t* con, msg_t* msg);
 
 msg_t* 
 msg_recv(const conn_t* con);

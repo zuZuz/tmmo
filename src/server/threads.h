@@ -4,21 +4,35 @@
 #include "network.h"
 #include "queue.h"
 
-typedef struct thread_arg thread_arg;
+#include "../game_processing/job_queue.h"
 
-struct thread_arg
+typedef struct receiver_args receiver_args;
+typedef struct sender_arg sender_arg;
+
+struct receiver_args
+{
+	jqueue_t* queue;
+	conn_t* con;
+	bool* is_terminated;
+};
+
+struct sender_arg
 {
 	queue_t* queue;
 	conn_t* con;
 	bool* is_terminated;
 };
 
-
 void*
 receiver_thread(void* args);
 
-
 void*
 sender_thread(void *args);
+
+int 
+run_input_thread(pthread_t* tid, jqueue_t* queue, conn_t* con);
+
+int 
+run_output_thread(pthread_t* tid, queue_t* queue, conn_t* con);
 
 #endif

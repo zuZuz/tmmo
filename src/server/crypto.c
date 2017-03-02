@@ -25,11 +25,11 @@ static char sid[] = {
 
 /* 
  *
- *	hash-function rot13 and
- *	basic xor crypto function
+ *	basic xor crypto crypto functions
  *
  */
 
+/* Rot13 hash function */
 static unsigned get_hash(char str[])
 {
 	size_t i;

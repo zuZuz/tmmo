@@ -6,58 +6,77 @@
 #include "threads.h"
 #include "server.h"
 
-volatile extern bool is_terminated;
+#include "../game_processing/job_queue.h"
 
-void* receiver_thread(void* args)
+void* receiver_thread(void* arg)
 {
-	msg_t* msg;
-	thread_arg* arg = (thread_arg*) args;
+	msg_t* msg = NULL;
+	receiver_args* args = (receiver_args*) arg;
 
 	while (true)
 	{
-		msg = msg_recv(arg->con);
+		msg = msg_recv(args->con);
 
-        if (crypto_key_is_empty(msg->key))
-        {
-            crypto_gen_key(msg->key, KEY_LEN);
-        }
+		if (!msg)
+		{
+			continue;
+		}
 
-        queue_enqueue(arg->queue, msg);
+		printf("recv: %s \n", msg->body);
+        jqueue_add_msg(args->queue, msg);
+		msg = NULL;
 	}
 
+	if (msg) msg_destroy(msg);
 	return NULL;
+}
+
+int run_input_thread(pthread_t* tid, jqueue_t* queue, conn_t* con)
+{
+	receiver_args arg;
+
+	arg.queue = queue;
+	arg.con = con;
+
+	return pthread_create(tid, NULL, receiver_thread, &arg);
 }
 
 void* sender_thread(void *args)
 {
-    msg_t *msg;
-    thread_arg *arg = (thread_arg *) args;
+	msg_t *msg;
+	sender_arg *arg = (sender_arg *) args;
 
-    while (true)
-    {
-        pthread_mutex_lock(&(arg->queue->mutex));
-        
-        while (queue_is_empty(arg->queue))
-        {
-            pthread_cond_wait(
-                &(arg->queue->cond), 
-                &(arg->queue->mutex)
-            );
-        }
+	while (true)
+	{
+		pthread_mutex_lock(&(arg->queue->mutex));
+		
+		while (queue_is_empty(arg->queue))
+		{
+			pthread_cond_wait(
+				&(arg->queue->cond), 
+				&(arg->queue->mutex)
+			);
+		}
+		
+		pthread_mutex_unlock(&(arg->queue->mutex));
+		queue_dequeue(arg->queue, (void **) &msg);
 
-        queue_dequeue(arg->queue, (void **) &msg);
-        pthread_mutex_unlock(&(arg->queue->mutex));
+		printf("sent: %s \n", msg->body);
+		msg_send(arg->con, msg);
+		msg_destroy(msg);
+		msg = NULL;
+	}
 
-        if (!msg) 
-        {
-            continue;
-        }
+	if (msg) msg_destroy(msg);
+	return NULL;
+}
 
-        printf("sent: %s \n", msg->body);
-        msg_send(arg->con, msg);
-        msg_destroy(msg);
-    }
+int run_output_thread(pthread_t* tid, queue_t* queue, conn_t* con)
+{
+	sender_arg arg;
 
-    printf("shutdowning\n");
-    return NULL;
+	arg.queue = queue;
+	arg.con = con;
+
+	return pthread_create(tid, NULL, sender_thread, &arg);
 }
