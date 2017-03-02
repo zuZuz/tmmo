@@ -63,10 +63,7 @@ void (* gfunc_get(char *func_name) )(msg_t*, char*)
     void (*func)(msg_t*, char*);
     func = str_hashtable_get(funcs_hashtable, func_name);
 
-    if(func != NULL)
-        return func;
-    else
-        return gfunc_dntknow;
+    return (func != NULL) ? func : gfunc_dntknow;
 }
 
 void gfunc_destroy()
