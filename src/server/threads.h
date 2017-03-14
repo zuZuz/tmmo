@@ -11,8 +11,9 @@ typedef struct sender_arg sender_arg;
 
 struct receiver_args
 {
-	jqueue_t* queue;
 	conn_t* con;
+	jqueue_t* in;
+	queue_t* out;
 	bool* is_terminated;
 };
 
@@ -30,7 +31,7 @@ void*
 sender_thread(void *args);
 
 int 
-run_input_thread(pthread_t* tid, jqueue_t* queue, conn_t* con);
+run_input_thread(pthread_t* tid, jqueue_t* in, queue_t* out, conn_t* con);
 
 int 
 run_output_thread(pthread_t* tid, queue_t* queue, conn_t* con);

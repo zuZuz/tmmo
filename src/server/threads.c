@@ -6,12 +6,15 @@
 #include "threads.h"
 #include "server.h"
 
+#include "../game_processing/query_processing.h"
 #include "../game_processing/job_queue.h"
 
 void* receiver_thread(void* arg)
 {
 	msg_t* msg = NULL;
 	receiver_args* args = (receiver_args*) arg;
+	jqueue_t* in = args->in;
+	queue_t* out = args->out;
 
 	while (true)
 	{
@@ -23,7 +26,7 @@ void* receiver_thread(void* arg)
 		}
 
 		printf("recv: %s \n", msg->body);
-        jqueue_add_msg(args->queue, msg);
+        jqueue_add_job(in, query_processing_new, msg, out);
 		msg = NULL;
 	}
 
@@ -31,11 +34,12 @@ void* receiver_thread(void* arg)
 	return NULL;
 }
 
-int run_input_thread(pthread_t* tid, jqueue_t* queue, conn_t* con)
+int run_input_thread(pthread_t* tid, jqueue_t* in, queue_t* out, conn_t* con)
 {
 	receiver_args arg;
 
-	arg.queue = queue;
+	arg.in = in;
+	arg.out = out;
 	arg.con = con;
 
 	return pthread_create(tid, NULL, receiver_thread, &arg);

@@ -102,13 +102,14 @@ int main(int argc, char* argv[])
 	/* game handler */
 	handler = threadpool_create(WORKERS_COUNT);
 	in = threadpool_get_jqueue(handler);
-	out = threadpool_get_out_queue(handler);
+	out = queue_init();
+	
 
 	/* service msg handler */
 
 	/* running I/O server threads */
 	run_output_thread(&output, out, con);
-	run_input_thread(&input, in, con);
+	run_input_thread(&input, in, out, con);
 
     /* waiting for stop */
     wait_signal();
