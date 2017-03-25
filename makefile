@@ -10,8 +10,12 @@ PRCSSR_SRC=$(wildcard src/game_processing/*.c)
 SERVER_OBJ=$(SERVER_SRC:src/server/%.c=build/%.o)
 PRCSSR_OBJ=$(PRCSSR_SRC:src/game_processing/%.c=build/%.o)
 
-all: server processer
+all: dirs server processer
 	$(CC) -o bin/$(SERVER) build/*.o -lpthread -O0 -ggdb
+
+dirs:
+	mkdir -p bin
+	mkdir -p build
 
 server: $(SERVER_OBJ)
 

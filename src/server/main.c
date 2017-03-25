@@ -103,9 +103,6 @@ int main(int argc, char* argv[])
 	handler = threadpool_create(WORKERS_COUNT);
 	in = threadpool_get_jqueue(handler);
 	out = queue_init();
-	
-
-	/* service msg handler */
 
 	/* running I/O server threads */
 	run_output_thread(&output, out, con);

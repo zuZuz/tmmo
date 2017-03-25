@@ -65,6 +65,11 @@ void* sender_thread(void *args)
 		pthread_mutex_unlock(&(arg->queue->mutex));
 		queue_dequeue(arg->queue, (void **) &msg);
 
+		if (crypto_key_is_empty(msg->key))
+		{
+			crypto_gen_key(msg->key, KEY_LEN);
+		}
+
 		printf("sent: %s \n", msg->body);
 		msg_send(arg->con, msg);
 		msg_destroy(msg);

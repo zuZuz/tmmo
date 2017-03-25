@@ -90,7 +90,7 @@ void conn_destroy(conn_t* con)
 	free(con);
 }
 
-msg_t* msg_init(const conn_t* con, char key[KEY_LEN])
+msg_t* msg_init(const conn_t* con)
 {
 	msg_t* msg = malloc(sizeof(msg_t));
 	if (!msg)
@@ -105,21 +105,32 @@ msg_t* msg_init(const conn_t* con, char key[KEY_LEN])
 		msg->addr = con->addr;
 	}
 
-	if (key)
-	{
-		memcpy(msg->key, key, KEY_LEN);
-	}
-	else
-	{
-		memset(msg->key, 0, KEY_LEN);
-	}
-
+	memset(msg->key, 0, KEY_LEN);
 	return msg;
+}
+
+void msg_set_key(msg_t* msg, char key[KEY_LEN])
+{
+	memcpy(msg->key, key, KEY_LEN);
+}
+
+void msg_set_type(msg_t* msg, msg_type_t type)
+{
+	msg->type = type;
+}
+
+void msg_set_body(msg_t* msg, char body[MAX_LEN])
+{
+	size_t len =strlen(body);
+	memcpy(msg->body, body, len);
 }
 
 ssize_t msg_send(const conn_t* con, msg_t* msg)
 {
-	//crypto_encrypt(msg->body, msg->key);
+	if (!crypto_key_is_empty(msg->key))
+	{
+		crypto_encrypt(msg->body, msg->key);
+	}
 
 	return sendto(
 		con->socket,
@@ -138,7 +149,7 @@ msg_t* msg_recv(const conn_t* con)
 	ssize_t received;
 	
 	size = sizeof(struct sockaddr);
-	msg = msg_init(NULL, NULL);
+	msg = msg_init(NULL);
 
 	received = recvfrom(
 		con->socket, 
@@ -155,7 +166,11 @@ msg_t* msg_recv(const conn_t* con)
 		return NULL;
 	}
 
-	//crypto_decrypt(msg->body, msg->key);
+	if (!crypto_key_is_empty(msg->key))
+	{
+		crypto_decrypt(msg->body, msg->key);
+	}
+
 	return msg;
 }
 

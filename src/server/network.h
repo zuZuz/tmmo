@@ -49,7 +49,16 @@ void
 conn_destroy(conn_t* con);
 
 msg_t* 
-msg_init(const conn_t* con, char key[KEY_LEN]);
+msg_init(const conn_t* con);
+
+void 
+msg_set_key(msg_t* msg, char key[KEY_LEN]);
+
+void 
+msg_set_type(msg_t* msg, msg_type_t type);
+
+void 
+msg_set_body(msg_t* msg, char body[MAX_LEN]);
 
 ssize_t 
 msg_send(const conn_t* con, msg_t* msg);

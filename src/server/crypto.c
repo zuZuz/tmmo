@@ -25,7 +25,7 @@ static char sid[] = {
 
 /* 
  *
- *	basic xor crypto crypto functions
+ *	simple xor crypto functions for string encryption
  *
  */
 
