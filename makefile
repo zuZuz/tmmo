@@ -1,4 +1,5 @@
 CC=gcc
+
 CFLAGS= -lpthread -c -ggdb -O0 -std=gnu99
 
 CLIENT=tmmo_game
