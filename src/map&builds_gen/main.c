@@ -1,8 +1,7 @@
 #include <stdio.h>
 #include <string.h>
-#include "../map.h"
+#include "../game_processing/map.h"
 #include "buildgen.h"
-#include "../game_main.h"
 
 #define COLOR_REGION_OFFSET 30
 
@@ -98,8 +97,6 @@ void map_to_pic(FILE *fmap, FILE *fpic, FILE *fpic_reg)
             ptr_reg += 3;
         }
     }
-
-    game_init(bufmap, size_x, size_y, buildings, buildings_cnt);
 
     fprintf(fpic, "P6\n%d %d\n255\n", (int)size_x, (int)size_y);
     fflush(fpic);

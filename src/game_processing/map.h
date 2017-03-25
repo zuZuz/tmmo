@@ -14,9 +14,8 @@ typedef enum ground_type
 } ground_type_t;
 
 typedef enum object_type
-{
-    nothing,
-   character
+{   nothing,
+    character
 } object_type_t;
 
 #define SURFACE_TYPE_CNT 2

@@ -1,3 +1,5 @@
+#include "../game_processing/map.h"
+
 #ifndef BUILDGEN_H
 #define BUILDGEN_H
 
