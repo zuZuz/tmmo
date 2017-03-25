@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS= -lpthread -c -std=c99 -ggdb -O0
+CFLAGS= -lpthread -c -std=c99 -D_POSIX_C_SOURCE
 
 CLIENT=tmmo_game
 SERVER=tmmo_server
