@@ -14,7 +14,7 @@ static void activate(GtkApplication* app, gpointer user_data)
 {
     GtkBuilder  *builder;
 
-    builder = gtk_builder_new_from_file("src/client/gui/main.glade");
+    builder = gtk_builder_new_from_file("main.glade");
 
     main_win = g_malloc(sizeof(main_win_t));
     main_win->main_text_win = g_malloc(sizeof(text_win_t));
