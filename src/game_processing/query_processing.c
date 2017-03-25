@@ -2,6 +2,8 @@
 #include "game_functions.h"
 #include "shared_funcs.h"
 
+static queue_t* out_queue;
+
 static bool query_text(msg_t *msg)
 {
     char *pos = msg->body;
@@ -18,7 +20,7 @@ static bool query_text(msg_t *msg)
         return false;
 }
 
-void query_processing_new(void *message, void *out_queue)
+void query_processing_new(void *message)
 {
     bool have_asnw;
 
@@ -35,7 +37,12 @@ void query_processing_new(void *message, void *out_queue)
 
     if(have_asnw == true)
     {
-        queue_enqueue((queue_t *) out_queue, message);
-        pthread_cond_signal(&((queue_t *) out_queue)->cond);
+        queue_enqueue(out_queue, message);
+        pthread_cond_signal(&(out_queue->cond));
     }
+}
+
+void set_out_queue(queue_t* _out_queue)
+{
+    out_queue = _out_queue;
 }

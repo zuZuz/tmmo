@@ -17,9 +17,8 @@ typedef struct job_queue_node
 
 typedef struct job
 {
-    void (*function)(void*, void*);
+    void (*function)(void*);
     void *arg1;
-    void *arg2;
 } job_t;
 
 
@@ -34,14 +33,13 @@ jqueue_t* jqueue_create(pthread_cond_t *cond, pthread_mutex_t *mutex)
     return head;
 }
 
-void jqueue_add_job(jqueue_t* head, void (*function)(void*, void*), void *arg1, void *arg2)
+void jqueue_add_job(jqueue_t* head, void (*function)(void*), void *arg1)
 {
     job_queue_node_t* new_node = malloc( sizeof(job_queue_node_t) );
 
     new_node->next = NULL;
     new_node->qjob = malloc( sizeof(job_t) );
     new_node->qjob->arg1 = arg1;
-    new_node->qjob->arg2 = arg2;
     new_node->qjob->function = function;
 
     pthread_mutex_lock(head->mutex);
@@ -103,5 +101,5 @@ void jqueue_destroy(jqueue_t** head)
 
 void do_job(job_t* job)
 {
-    job->function(job->arg1, job->arg2);
+    job->function(job->arg1);
 }
