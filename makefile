@@ -42,7 +42,7 @@ build/server/%.o: src/game_processing/%.c
 	$(CC) $(CFLAGS) $(SERVER_INCFLAGS) -o $@ $<
 
 build/client/%.o: src/client/%.c
-	$(CC) $(CFLAGS) $(GTKFLAGS) -o $@ $<
+	$(CC) $(CFLAGS) -o $@ $< $(GTKFLAGS)
 
 clean:
 	rm -r build/*
