@@ -1,6 +1,11 @@
 #include <getopt.h>
 #include <signal.h>
 
+#include <query_processing.h>
+#include <game_functions.h>
+#include <threadpool.h>
+#include <job_queue.h>
+
 #include "config.h"
 #include "crypto.h"
 #include "network.h"
@@ -8,12 +13,7 @@
 #include "server.h"
 #include "threads.h"
 
-#include "../game_processing/query_processing.h"
-#include "../game_processing/game_functions.h"
-#include "../game_processing/threadpool.h"
-#include "../game_processing/job_queue.h"
-
-#define WORKERS_COUNT 2
+static bool is_stopped = false;
 
 static void wait_signal()
 {
@@ -29,47 +29,73 @@ static void wait_signal()
 	sigprocmask(SIG_BLOCK, &set, NULL);
 	sigwaitinfo(&set, &info);
 
+	is_stopped = true;
 	printf("\nStopping server\n");
+}
+
+/* set up default values here */ 
+
+static cfg_t* config_default()
+{
+	cfg_t* cfg = config_init(MAX_OPTS);
+
+	config_setopt(cfg, "max_players", "100");
+	config_setopt(cfg, "server_port", "27015");
+	config_setopt(cfg, "shard_enabled", "false");
+
+	config_save("server.conf", cfg);
+	return cfg;
 }
 
 int main(int argc, char* argv[])
 {
-	/* arguments parsing */
+	/* 
+	 *
+	 * variables
+	 *  
+	 */
 	int opt;
 	char* config_file = "server.conf";
 
-	/* common */
 	cfg_t* cfg;
 	conn_t* con;
 	char* err;
 
-	/* threads */
 	pthread_t input;
 	pthread_t output;
 
-	/* processer */
 	threadpool_t* handler;
 	jqueue_t* in;
 	queue_t* out;
 
-	/* network */
-	size_t max_players = 100;
-	unsigned short server_port = 27015;
+	size_t max_players;
+	unsigned short server_port;
 
-	/* cli arguments parsing */
-	while ((opt = getopt(argc, argv, "f:")) != -1)
+	/* 
+	 *
+	 * cli arguments parsing
+	 *  
+	 */
+	while ((opt = getopt(argc, argv, "hf:")) != -1)
 	{
 		switch (opt)
 		{
 			case 'f': 
 				config_file = optarg; 
 				break;
+			case 'h':
 			default:
 				printf("Usage: %s [-f] [config_file]\n", argv[0]);
+				return 0;
 				break;
 		}
 	}
 
+	/* 
+	 *
+	 * load configuration
+	 *  
+	 */
 	cfg = config_load(config_file);
 	if (cfg)
 	{
@@ -81,9 +107,19 @@ int main(int argc, char* argv[])
 		cfg = config_default();
 	}
 
+	/* 
+	 *
+	 * parse configuration
+	 *  
+	 */
 	max_players = atoi(config_getopt(cfg, "max_players"));
 	server_port = atoi(config_getopt(cfg, "server_port"));
 
+	/* 
+	 *
+	 * initialize connection
+	 *  
+	 */
 	con = conn_init("0.0.0.0", server_port, BIND);
 	if (!con)
 	{
@@ -92,15 +128,20 @@ int main(int argc, char* argv[])
 	}
 	else
 	{
-		fprintf(stdout, "Started at port %d \n", server_port);
+		fprintf(stdout, "Server tarted at port %d \n", server_port);
 		conn_set_timeout(con, 1);
 	}
 
+	/* 
+	 *
+	 * initialize some modules
+	 *  
+	 */
 	gfunc_init(&err);
 	crypto_init();
 
 	/* game handler */
-	handler = threadpool_create(WORKERS_COUNT);
+	handler = threadpool_create(2);
 	in = threadpool_get_jqueue(handler);
 	out = queue_init();
 

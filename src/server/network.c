@@ -106,10 +106,11 @@ msg_t* msg_init(const conn_t* con)
 	}
 
 	memset(msg->key, 0, KEY_LEN);
+	memset(msg->body, 0, MAX_LEN);
 	return msg;
 }
 
-void msg_set_key(msg_t* msg, char key[KEY_LEN])
+void msg_set_key(msg_t* msg, const char* key)
 {
 	memcpy(msg->key, key, KEY_LEN);
 }
@@ -119,10 +120,10 @@ void msg_set_type(msg_t* msg, msg_type_t type)
 	msg->type = type;
 }
 
-void msg_set_body(msg_t* msg, char body[MAX_LEN])
+void msg_set_body(msg_t* msg, const char* body)
 {
-	size_t len =strlen(body);
-	memcpy(msg->body, body, len);
+	msg->len = strlen(body);
+	memcpy(msg->body, body, msg->len);
 }
 
 ssize_t msg_send(const conn_t* con, msg_t* msg)
