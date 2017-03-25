@@ -1,0 +1,20 @@
+language: c
+
+compiler:
+- gcc
+
+script:
+- make
+
+deploy:
+  provider: releases
+  api_key:
+    secure: Ssu8d38M8umf3UVDCNdX3a/YCskbgX3x4Bp8CQ8TbTmuyAc+XIGG8wVKJKWTJoFqHmbQppvAsW6uGtW+ayZmrtAO3ZDbSoVxhIZtVttvBT7TwWdE+sF9sRRjpQRpUy3iX704p7FrMobVUym+rPDmvm1pB2ikQix2BA3HJSxs73N+n5tUWpc4Uv2sUJgz2M04t1N/B68z6ztPF5P4MvgFgp7iqjpjH4gm8eaNePvcFet4y+ActJ0+UNRsWivgdfjvyHn+ynzUkK9cIEFoy7K7vL79QIOPZ58wS9hK4wkG1D4jeRmHpKsUk511NT7WVVq18VrTv9Ut7YKo12dYDaNbyoceBpVV3mo+hGysHKActX6sxN0lnaAEtR7jJ8TM2V7XZj5pcSu84VtMDDA0Ljj2R69D71//hJcVnc5xn2IH/qm3bLr1oAh0rYEkRaTSDb+ilXvyD3yATnkrwYUsuVs8EPEb6vPMx5zXMVELc9oBVhmpy9924eH0JybjkNBnLh2qdg0gIYTvOZL/iEEM8/GX7EWAdTXi5NvBd3T3IXc4pwOOf0rCHOgwnSagQfBxY9KquEAXPJb17wG55afUJbUe4/aux0/TwTkEx/iX4KQ7sibkt2K6vvqG7sdIYElGUCLo7z1R8ScrWiE3TZHUmhAg5/Rl1BBVXixTKrpwjZuwxBs=
+ 
+  file: "./bin/tmmo_server"
+  file_glob: true
+  skip_cleanup: "true"
+  
+  on:
+    branch: master
+    repo: zuZuz/tmmo
