@@ -14,9 +14,8 @@ typedef enum ground_type
 } ground_type_t;
 
 typedef enum object_type
-{
-    nothing,
-   character
+{   nothing,
+    character
 } object_type_t;
 
 #define SURFACE_TYPE_CNT 2
@@ -34,7 +33,8 @@ typedef struct map_point
     int y;
     ground_type_t ground;
     surface_type_t surface;
-    object_type_t child_object;
+    object_type_t child_object_type;
+    void *child_object;
     int name_id;
     size_t region;
 } map_point_t;

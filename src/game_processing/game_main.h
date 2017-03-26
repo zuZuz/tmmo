@@ -1,8 +1,11 @@
 #include "map.h"
-#include "map&builds_gen/buildgen.h"
+#include "../map&builds_gen/buildgen.h"
+#include "character.h"
 
 #ifndef GAME_MAIN_H
 #define GAME_MAIN_H
+
+#define tick_delay 10000 //1000 = 1ms
 
 #define BUILDING_TYPE_OFFSET 10
 typedef enum building_type
@@ -15,16 +18,13 @@ typedef enum building_type
 
 } building_type_t;
 
-typedef enum direction
+typedef struct union_buildings
 {
-    nowhere,
-    right,
-    left,
-    up,
-    down
+    building_t *buildings;
+    size_t buildings_cnt;
+} union_buildings_t;
 
-} direction_t;
-
-void game_init(map_point_t *map, size_t msize_x, size_t msize_y, building_t *buildings, size_t buildings_cnt);
+void game_start(map_point_t *map, size_t msize_x, size_t msize_y, building_t *buildings, size_t buildings_cnt);
+int game_init(char *map_name);
 
 #endif //GAME_MAIN_H

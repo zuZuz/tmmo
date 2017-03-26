@@ -107,7 +107,7 @@ map_point_t* map_generation(size_t factor, size_t size_x, size_t size_y, ground_
         sites[i].x =  size_x * (double)rand() / RAND_MAX;
         sites[i].y =  size_y * (double)rand() / RAND_MAX;
         sites[i].ground = i % GROUND_TYPE_CNT;
-        sites[i].child_object = empty;
+        sites[i].child_object_type = nothing;
     }
 
     i = 0;
@@ -121,7 +121,7 @@ map_point_t* map_generation(size_t factor, size_t size_x, size_t size_y, ground_
             sites[i].x = x;
             sites[i].y = y;
             sites[i].ground = bound;
-            sites[i].child_object = empty;
+            sites[i].child_object_type = nothing;
 
             i++;
         }
@@ -140,7 +140,7 @@ map_point_t* map_generation(size_t factor, size_t size_x, size_t size_y, ground_
                                            bound:
                                            nearest_ground(map + y*size_x + x, sites, sites_cnt);
 
-            (map + y*size_x + x)->child_object = nothing;
+            (map + y*size_x + x)->child_object_type = nothing;
             (map + y*size_x + x)->surface = empty;
             (map + y*size_x + x)->region = -1;
         }

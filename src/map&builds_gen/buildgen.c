@@ -1,4 +1,3 @@
-#include "../map.h"
 #include <string.h>
 #include <stdbool.h>
 #include <time.h>
@@ -147,7 +146,7 @@ void buildgen()
 
             (build + y*size_x + x)->ground = soil;
             (build + y*size_x + x)->name_id = nameid;
-            (build + y*size_x + x)->child_object = nothing;
+            (build + y*size_x + x)->child_object_type = nothing;
             (build + y*size_x + x)->x = x;
             (build + y*size_x + x)->y = y;
         }
