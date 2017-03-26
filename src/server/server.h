@@ -9,6 +9,7 @@
 #define EXIT_SUCCESS 0
 #define EXIT_ERROR 1
 
-bool atob(char* str);
+bool 
+atob(char* str);
 
 #endif
