@@ -22,6 +22,11 @@ typedef struct node {
     char colour_field;
 } node;
 
+static void wait_signal(uv_signal_t* handle, int signum)
+{
+    uv_stop(&loop);
+    printf("\nStopping database\n");
+}
 
 #define COMPARATOR(x,y) (strcmp(x->key, y->key))
 
