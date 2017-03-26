@@ -20,6 +20,8 @@ character_t* character_new(int position_x, int position_y, char *name, character
     new_char->is_player = is_player;
     new_char->id = 0;
     new_char->step_start_time = 0;
+    new_char->items.arr = NULL;
+    new_char->items.count = 0;
 
     switch(race)
     {
@@ -56,7 +58,6 @@ void character_set_target(character_t *character, character_t *target)
 
 void character_add(characters_t *characters, character_t *_character, size_t _msize_x, size_t _msize_y, map_point_t* _map)
 {
-    _character->id = characters->count;
     characters->arr = realloc(characters->arr, characters->count + 1);
     characters->arr[characters->count] = _character;
     characters->count++;
@@ -145,6 +146,13 @@ bool character_attack(character_t *character, characters_t *characters)
 
     return false;
 
+}
+
+void character_add_item(character_t *character, item_t *item)
+{
+    character->items.arr = realloc(character->items.arr, character->items.count + 1);
+    character->items.arr[character->items.count] = item;
+    character->items.count++;
 }
 
 direction_t character_move_to_target(character_t *character, size_t _msize_x, size_t _msize_y, map_point_t* _map)
