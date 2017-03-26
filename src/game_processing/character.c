@@ -22,6 +22,27 @@ character_t* character_new(int position_x, int position_y, char *name, character
     new_char->id = 0;
     new_char->step_start_time = 0;
 
+    switch(race)
+    {
+        case human:
+            new_char->characteristics.armor = 5;
+            new_char->characteristics.evasion = 2;
+            new_char->characteristics.power = 10;
+            break;
+
+        case beast:
+            new_char->characteristics.armor = 2;
+            new_char->characteristics.evasion = 2;
+            new_char->characteristics.power = 13;
+            break;
+    }
+
+    new_char->characteristics.armor *= lvl;
+    new_char->characteristics.evasion *= lvl;
+    new_char->characteristics.power *= lvl;
+    new_char->hp *= lvl;
+
+
     return new_char;
 }
 
@@ -72,6 +93,17 @@ void character_find_target(character_t *character, characters_t *characters)
     }
 }
 
+static int character_damage(character_t *character, character_t *target)
+{
+    int damage = character->characteristics.power - (rand() % target->characteristics.evasion) - target->characteristics.armor;
+    if(damage < 0)
+        damage = 0;
+
+    target->hp -= damage;
+
+    return damage;
+}
+
 //TODO: add action and send to target
 bool character_attack(character_t *character, characters_t *characters)
 {
@@ -91,7 +123,8 @@ bool character_attack(character_t *character, characters_t *characters)
 
     if(dist < 2)
     {
-        character->target->hp -= rand() % character->lvl;
+
+        character_damage(character, character->target);
         character->target->target = character;
 
         if(character->target->hp <= 0)
@@ -110,8 +143,6 @@ bool character_attack(character_t *character, characters_t *characters)
     }
 
     return false;
-
-
 
 }
 

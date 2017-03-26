@@ -25,6 +25,13 @@ typedef enum character_race
 
 } character_race_t;
 
+typedef struct characteristics
+{
+    int power;
+    int armor;
+    int evasion;
+} characteristics_t;
+
 typedef struct character
 {
     char *name;
@@ -32,6 +39,7 @@ typedef struct character
     int id;
     int hp;
     int lvl;
+    characteristics_t characteristics;
     map_point_t position;
     bool is_player;
 
