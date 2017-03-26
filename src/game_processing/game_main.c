@@ -59,8 +59,8 @@ void game_init(map_point_t *map, size_t msize_x, size_t msize_y, building_t *bui
     printf("taverns: %zu\n", taverns.buildings_cnt);
     printf("academies: %zu\n", academies.buildings_cnt);
 
-    character_t *player1 = character_new(180, 180, "player1", human, 100, 10, 5000);
-    character_t *player2 = character_new(190, 190, "player2", beast, 100, 10, 5000);
+    character_t *player1 = character_new(180, 180, "player1", human, 100, 10, 5000, false);
+    character_t *player2 = character_new(190, 190, "player2", beast, 100, 10, 5000, false);
 
     player1->aggression = true;
     player2->aggression = true;

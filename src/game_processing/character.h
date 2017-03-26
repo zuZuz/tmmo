@@ -33,6 +33,7 @@ typedef struct character
     int hp;
     int lvl;
     map_point_t position;
+    bool is_player;
 
     clock_t step_time;
 
@@ -51,7 +52,7 @@ typedef struct characters
 } characters_t;
 
 
-character_t* character_new(int position_x, int position_y, char *name, character_race_t race, int hp, int lvl, clock_t step_time);
+character_t* character_new(int position_x, int position_y, char *name, character_race_t race, int hp, int lvl, clock_t step_time, bool is_player);
 void character_set_target(character_t *character, character_t *target);
 direction_t character_move_to_target(character_t *character, size_t _msize_x, size_t _msize_y, map_point_t* _map);
 void character_add(characters_t *characters, character_t *_character, size_t _msize_x, size_t _msize_y, map_point_t* _map);

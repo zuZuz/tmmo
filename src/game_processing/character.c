@@ -5,7 +5,7 @@
 extern double sqrt(double);
 extern double pow(double, double);
 
-character_t* character_new(int position_x, int position_y, char *name, character_race_t race, int hp, int lvl, clock_t step_time)
+character_t* character_new(int position_x, int position_y, char *name, character_race_t race, int hp, int lvl, clock_t step_time, bool is_player)
 {
     character_t* new_char = malloc(sizeof(character_t));
     new_char->position.x = position_x;
@@ -18,6 +18,9 @@ character_t* character_new(int position_x, int position_y, char *name, character
     new_char->hp = hp;
     new_char->lvl = lvl;
     new_char->race = race;
+    new_char->is_player = is_player;
+    new_char->id = 0;
+    new_char->step_start_time = 0;
 
     return new_char;
 }
@@ -49,6 +52,9 @@ void character_find_target(character_t *character, characters_t *characters)
 {
     double dist;
     double min_dist;
+
+    if(character->is_player)
+        return;
 
     min_dist = INT_MAX;
     for(int i = 0; i < characters->count; i++)
@@ -93,6 +99,12 @@ void character_attack(character_t *character, characters_t *characters)
         }
     }
 
+    if(character->is_player)
+    {
+        character->aggression = false;
+        character->target = NULL;
+    }
+
 }
 
 direction_t character_move_to_target(character_t *character, size_t _msize_x, size_t _msize_y, map_point_t* _map)
@@ -103,8 +115,44 @@ direction_t character_move_to_target(character_t *character, size_t _msize_x, si
     double dist;
     double min_dist;
 
+    bool player_step_avaliable = false;
+
+    if(character->is_player)
+    {
+        switch(character->next_step)
+        {
+            case west:
+                player_step_avaliable = (character->position.x + 1 < _msize_x)
+                                        && ( ((_map + character->position.y*_msize_x + character->position.x + 1)->surface != empty)
+                                             || ((_map + character->position.y*_msize_x + character->position.x + 1)->child_object_type != nothing) );
+                break;
+
+            case east:
+                player_step_avaliable = (character->position.x - 1 >= 0)
+                                        && ( ((_map + character->position.y*_msize_x + character->position.x - 1)->surface != empty)
+                                             || ((_map + character->position.y*_msize_x + character->position.x - 1)->child_object_type != nothing) );
+                break;
+
+            case north:
+                player_step_avaliable = (character->position.y + 1 < _msize_y)
+                                        && ( ((_map + (character->position.y + 1)*_msize_x + character->position.x)->surface != empty)
+                                             || ((_map + (character->position.y + 1)*_msize_x + character->position.x)->child_object_type != nothing) );
+                break;
+
+            case south:
+                player_step_avaliable = (character->position.y - 1 >= 0)
+                                        && ( ((_map + (character->position.y - 1)*_msize_x + character->position.x)->surface != empty)
+                                             || ((_map + (character->position.y - 1)*_msize_x + character->position.x)->child_object_type != nothing) );
+                break;
+        }
+
+        return player_step_avaliable ? character->next_step : nowhere;
+    }
+
+
     if(character->target == NULL)
         return nowhere;
+
 
     min_dist = INT_MAX;
     for(int x = character->position.x + 1; (x < _msize_x) && (x <= character->position.x + visibility_range) ; x++)
