@@ -17,6 +17,7 @@ static void activate(GtkApplication* app, gpointer user_data)
     builder = gtk_builder_new_from_file("src/client/gui/main.glade");
 
     main_win = g_malloc(sizeof(main_win_t));
+    main_win->map = g_malloc(sizeof(map_t));
     main_win->main_text_win = g_malloc(sizeof(text_win_t));
     main_win->chat_win = g_malloc(sizeof(text_win_t));
     main_win->online_win = g_malloc(sizeof(text_win_t));
@@ -25,6 +26,7 @@ static void activate(GtkApplication* app, gpointer user_data)
 
     main_win->window = GTK_WIDGET(gtk_builder_get_object(builder, "main_window"));
     main_win->comm_entry = GTK_WIDGET(gtk_builder_get_object(builder, "comm_entry"));
+    main_win->map->draw_area = GTK_WIDGET(gtk_builder_get_object(builder, "map_area"));
     main_win->main_text_win->buf = GTK_TEXT_BUFFER(gtk_builder_get_object(builder, "main_text_buffer"));
     main_win->main_text_win->scroll_win = GTK_WIDGET(gtk_builder_get_object(builder, "main_scrolledwin"));
     main_win->main_text_win->text_view = GTK_WIDGET(gtk_builder_get_object(builder, "main_text"));
@@ -43,6 +45,8 @@ static void activate(GtkApplication* app, gpointer user_data)
 
     /*connect for main_win->window*/
     g_signal_connect(main_win->comm_entry, "activate", G_CALLBACK(sp_command_enter), NULL);
+    g_signal_connect (main_win->map->draw_area,"configure-event", G_CALLBACK (sp_draw_area_init), main_win->map);
+    g_signal_connect (main_win->map->draw_area, "draw", G_CALLBACK (sp_draw), main_win->map);
 
     /*connect for init_win->window*/
     g_signal_connect(init_win->button, "clicked", G_CALLBACK(sp_ip_enter), (gpointer)init_win->entry);
@@ -71,6 +75,7 @@ void free_mem()
     g_free(main_win->main_text_win);
     g_free(main_win->chat_win);
     g_free(main_win->online_win);
+    g_free(main_win->map);
 
     g_free(main_win);
     g_free(init_win);
@@ -158,4 +163,11 @@ void gui_print_chat_msg(char* str)
     if(data == NULL) return;
 
     gdk_threads_add_idle(print_message_and_scroll, data);
+}
+
+void gui_map_update(map_point_t* points)
+{
+    map_load(points, main_win->map);
+
+    gdk_threads_add_idle(map_refresh, main_win->map);
 }

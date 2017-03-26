@@ -35,7 +35,6 @@ static bool check_connection(conn_t* conn)
 static void msg_process(msg_t* msg)
 {
     if(msg == NULL) return;
-
     switch (msg->type)
     {
         case text:
