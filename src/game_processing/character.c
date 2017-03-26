@@ -73,12 +73,12 @@ void character_find_target(character_t *character, characters_t *characters)
 }
 
 //TODO: add action and send to target
-void character_attack(character_t *character, characters_t *characters)
+bool character_attack(character_t *character, characters_t *characters)
 {
     double dist;
 
     if(character->target == NULL)
-        return;
+        return false;
 
     dist = sqrt( pow(character->target->position.x - character->position.x, 2) + pow(character->target->position.y - character->position.y, 2) );
 
@@ -92,18 +92,26 @@ void character_attack(character_t *character, characters_t *characters)
     if(dist < 2)
     {
         character->target->hp -= rand() % character->lvl;
+        character->target->target = character;
+
         if(character->target->hp <= 0)
         {
             character_remove(characters, character->target);
             character->target = NULL;
         }
+
+        if(character->is_player)
+        {
+            character->aggression = false;
+            character->target = NULL;
+        }
+
+        return true;
     }
 
-    if(character->is_player)
-    {
-        character->aggression = false;
-        character->target = NULL;
-    }
+    return false;
+
+
 
 }
 
