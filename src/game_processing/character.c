@@ -60,14 +60,25 @@ void character_add(characters_t *characters, character_t *_character, size_t _ms
 {
     characters->arr = realloc(characters->arr, characters->count + 1);
     characters->arr[characters->count] = _character;
+    _character->id = characters->count;
     characters->count++;
 
     (_map + _character->position.y * _msize_x + _character->position.x)->child_object_type = character;
 }
 
-void character_remove(characters_t *characters, character_t *character)
+void character_remove(characters_t *characters, character_t *character, size_t _msize_x, map_point_t* _map, int *index)
 {
-    memmove(characters->arr + character->id, characters->arr + character->id + 1, (characters->count - character->id) * sizeof(void *));
+    (_map + character->position.y * _msize_x + character->position.x)->child_object_type = nothing;
+    (_map + character->position.y * _msize_x + character->position.x)->child_object = NULL;
+
+    if(characters->count - 1  !=  character->id)
+    {
+        if( (index != NULL) && ((*index) > character->id) )
+            (*index)--;
+
+        memmove(characters->arr + character->id, characters->arr + character->id + 1, (characters->count - character->id) * sizeof(void *));
+    }
+
     characters->count--;
 }
 
@@ -102,12 +113,14 @@ static int character_damage(character_t *character, character_t *target)
         damage = 0;
 
     target->characteristics.hp -= damage;
+    if(target->characteristics.hp < 0)
+        target->characteristics.hp = 0;
 
     return damage;
 }
 
 //TODO: add action and send to target
-bool character_attack(character_t *character, characters_t *characters)
+bool character_attack(character_t *character, characters_t *characters, size_t _msize_x, map_point_t* _map, int *index)
 {
     double dist;
 
@@ -128,10 +141,11 @@ bool character_attack(character_t *character, characters_t *characters)
 
         character_damage(character, character->target);
         character->target->target = character;
+        character->target->aggression = true;
 
         if(character->target->characteristics.hp <= 0)
         {
-            character_remove(characters, character->target);
+            character_remove(characters, character->target, _msize_x, _map, index);
             character->target = NULL;
         }
 

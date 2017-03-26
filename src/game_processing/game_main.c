@@ -60,8 +60,8 @@ void game_init(map_point_t *map, size_t msize_x, size_t msize_y, building_t *bui
     printf("taverns: %zu\n", taverns.buildings_cnt);
     printf("academies: %zu\n", academies.buildings_cnt);
 
-    character_t *player1 = character_new(180, 180, "player1", human, 1, 5000, false);
-    character_t *player2 = character_new(190, 190, "player2", beast, 1, 5000, false);
+    character_t *player1 = character_new(180, 180, "player1", human, 1, 100, false);
+    character_t *player2 = character_new(190, 190, "player2", beast, 1, 100, false);
 
     characteristics_t characs;
     characs.armor = 10;
@@ -72,7 +72,6 @@ void game_init(map_point_t *map, size_t msize_x, size_t msize_y, building_t *bui
     character_add_item(player1, item_new(onehanded_sword, "одноручный меч дракона", characs, 100));
     character_add_item(player1, item_new(twohanded_sword, "двуручный меч дракона", characs, 100));
     character_add_item(player2, item_new(shield, "щит братьев гор", characs, 100));
-
 
 
     player1->aggression = true;
@@ -93,7 +92,8 @@ void game_init(map_point_t *map, size_t msize_x, size_t msize_y, building_t *bui
 
 static void game_tick()
 {
-    for(int i = 0; i < characters.count; i++) {
+    for(int i = 0; i < characters.count; i++)
+    {
 
         if ( (characters.arr[i]->next_step == nowhere && !characters.arr[i]->aggression)
              || ( (clock() - characters.arr[i]->step_start_time) <= characters.arr[i]->step_time) )
@@ -106,7 +106,8 @@ static void game_tick()
         characters.arr[i]->next_step = character_move_to_target(characters.arr[i], _msize_x, _msize_y, _map);
         characters.arr[i]->step_start_time = clock();
 
-        switch (characters.arr[i]->next_step) {
+        switch (characters.arr[i]->next_step)
+        {
             case west:
                 characters.arr[i]->position.x++;
                 break;
@@ -124,7 +125,7 @@ static void game_tick()
                 break;
 
             case nowhere:
-                character_attack(characters.arr[i], &characters);
+                character_attack(characters.arr[i], &characters, _msize_x, _map, &i);
                 break;
         }
 
