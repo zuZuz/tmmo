@@ -6,8 +6,8 @@
 #define GAME_MAIN_H
 
 #define tick_delay 10000 //1000 = 1ms
-#define BUILDING_TYPE_OFFSET 10
 
+#define BUILDING_TYPE_OFFSET 10
 typedef enum building_type
 {
     barrack = 0,
