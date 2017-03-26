@@ -13,6 +13,9 @@ install:
 script:
 - make
 
+after_success:
+- bash set_tags.sh
+
 before_deploy:
 - tar czf client.tar.gz bin/client/
 - tar czf server.tar.gz bin/server/
