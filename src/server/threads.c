@@ -54,7 +54,7 @@ static void* sender_thread(void *args)
 
 		if (crypto_key_is_empty(msg->key))
 		{
-			crypto_gen_key(msg->key, KEY_LEN);
+			crypto_gen_key(msg->key, TOKEN_LEN);
 		}
 
 		printf("sent: %s \n", msg->body);

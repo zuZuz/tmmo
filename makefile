@@ -1,6 +1,6 @@
 CC=gcc
 
-CFLAGS=-lpthread -c -ggdb -O0 -std=gnu99
+CFLAGS=-c -ggdb -O0 -std=gnu99 -lpthread -lm
 GTKFLAGS=`pkg-config --cflags --libs gtk+-3.0`
 
 CLIENT=tmmo
@@ -29,20 +29,20 @@ dirs:
 processer: $(PRCSSR_OBJ)
 
 server: $(SERVER_OBJ)
-	$(CC) -o bin/server/$(SERVER) build/server/*.o -lpthread
+	$(CC) -o bin/server/$(SERVER) build/server/*.o -lpthread -lm
 
 client: $(CLIENT_OBJ)
 	$(CC) -o bin/client/$(CLIENT) build/client/*.o $(GTKFLAGS)
 	cp src/client/gui/main.glade bin/client/
 
 build/server/%.o: src/server/%.c
-	$(CC) $(CFLAGS) $(PRCSSR_INCFLAGS) -o $@ $<
+	$(CC) -c -o $@ $< $(CFLAGS) $(PRCSSR_INCFLAGS)
 
 build/server/%.o: src/game_processing/%.c
-	$(CC) $(CFLAGS) $(SERVER_INCFLAGS) -o $@ $<
+	$(CC) -c -o $@ $< $(CFLAGS) $(SERVER_INCFLAGS)
 
 build/client/%.o: src/client/%.c
-	$(CC) $(CFLAGS) -o $@ $< $(GTKFLAGS)
+	$(CC) -o $@ $< $(CFLAGS) $(GTKFLAGS)
 
 clean:
 	rm -r build/*
