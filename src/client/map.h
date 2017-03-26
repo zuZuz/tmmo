@@ -7,30 +7,27 @@
 #define SURFACE_COUNT 7
 #define OBJECT_COUNT 2
 
-typedef enum surface_type
-{
+typedef enum surface_type {
     soil = 0,
     sand,
     grass,
     water,
-    empty,
     wall,
     floor,
     unknown
 } surface_type_t;
 
-typedef enum object_type
-{
+typedef enum object_type {
     nothing,
     character
 } object_type_t;
 
-typedef struct map_point{
+typedef struct map_point {
     surface_type_t surface;
     object_type_t object;
 }map_point_t;
 
-typedef struct map{
+typedef struct map {
     GtkWidget *draw_area;
     cairo_surface_t *surface;
 

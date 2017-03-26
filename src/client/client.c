@@ -35,10 +35,27 @@ static bool check_connection(conn_t* conn)
 static void msg_process(msg_t* msg)
 {
     if(msg == NULL) return;
+
     switch (msg->type)
     {
-        case text:
+        case main_msg:
             gui_print_main_msg(msg->body);
+            break;
+
+        case chat_msg:
+            gui_print_chat_msg(msg->body);
+            break;
+
+        case char_info:
+            gui_print_char_info((char_info_t*)msg->body);
+            break;
+
+        case map_update:
+            gui_map_update((map_point_t*)msg->body);
+            break;
+
+        case online_list:
+            gui_print_online_list(msg->body);
             break;
 
         default:
@@ -114,7 +131,7 @@ void send_user_input(const char* input, size_t len)
     msg = msg_init(actv_conn);
     if(msg == NULL) return;
 
-    msg->type = text;
+    msg->type = user_msg;
     msg->len = len;
 
     msg_set_body(msg, input);
