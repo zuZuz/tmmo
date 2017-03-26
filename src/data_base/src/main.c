@@ -36,6 +36,7 @@ static void on_alloc(uv_handle_t *handle, size_t size, uv_buf_t *buf) {
 }
 
 void on_send(uv_write_t* req, int status) {
+    
 }
 
 static void send_reply(uv_stream_t* handle, char cmd, char* key, char *data, size_t data_len) {
@@ -43,7 +44,6 @@ static void send_reply(uv_stream_t* handle, char cmd, char* key, char *data, siz
     char *buffer;
     uv_buf_t buf;
     uv_write_t req;
-
     key_len = strlen(key);
     total_len = key_len + data_len + 2; 
     buffer = malloc(total_len);
@@ -53,7 +53,6 @@ static void send_reply(uv_stream_t* handle, char cmd, char* key, char *data, siz
         memcpy(&buffer[key_len+2], data, data_len);
     }
     buf = uv_buf_init(buffer, total_len);
-
     uv_write(&req, handle, &buf, 1, on_send);
 }
 
@@ -64,10 +63,8 @@ static void on_recv(uv_stream_t* handle, ssize_t nread, const uv_buf_t* buf) {
     int result;
 
     if(nread < 0) {
-  
         return;
-    }
-    else {
+    } else {
         tmp.key = &buf->base[1];
         key_len = strnlen(tmp.key, nread-1);
         if(key_len == nread-1) {
@@ -80,6 +77,7 @@ static void on_recv(uv_stream_t* handle, ssize_t nread, const uv_buf_t* buf) {
 
         switch(buf->base[0]) {
         case 'X':
+
             uv_stop(handle->loop);
             break;
 
@@ -112,7 +110,6 @@ static void on_recv(uv_stream_t* handle, ssize_t nread, const uv_buf_t* buf) {
 
         case 'D':  
             result = sglib_node_delete_if_member(&root, &tmp, &link);
-            // Free the node
             if(result > 0) {
                 send_reply(handle, 'd', link->key, link->data, link->data_len);
                 free(link->key);
@@ -133,7 +130,7 @@ static void on_recv(uv_stream_t* handle, ssize_t nread, const uv_buf_t* buf) {
             root = NULL;
             send_reply(handle, 'z', "", NULL, 0);
 
-        case '_':   
+        case '_':  
         {
             char key[8];
             char value[8];
@@ -147,6 +144,7 @@ static void on_recv(uv_stream_t* handle, ssize_t nread, const uv_buf_t* buf) {
             send_reply(handle, tolower(buf->base[0]), key, value, strlen(value));
             break;
         }
+
         default:
             printf("Unknown command: %c", buf->base[0]);
             break;
@@ -168,47 +166,50 @@ void on_new_connection(uv_stream_t *server, int status)
 
     uv_buf_t* buf = malloc(sizeof(uv_buf_t));
     buf->len = 0;
-
     uv_tcp_t* client = malloc(sizeof(uv_tcp_t));
     client->data = buf;
-
     uv_tcp_init(&loop, client);
     if (uv_accept(server, (uv_stream_t*) client) == 0) {
         uv_read_start((uv_stream_t*) client, on_alloc, on_recv);
-    }
-    else {
+    } else {
         uv_close((uv_handle_t*) client, NULL);
-    }
+        }
 }
 
 int main(int argc, char **argv) {
+
     uv_signal_t sig;
     uv_tcp_t skt;
     
-
     struct sockaddr_in addr;
-
     char *host = "0.0.0.0";
     int port = 6347;
     int verbose = 0;
-
     int opt;
 
     root = NULL;
 
     while ((opt = getopt(argc, argv, "a:f:p:v")) != -1) {
         switch (opt) {
+
         case 'a':
+
             host = optarg;
             break;
+
         case 'f':
+
             filename = optarg;
         case 'p':
+
             port = atoi(optarg);
             break;
+
         case 'v':
+
             verbose += 1;
             break;
+
         default:
             fprintf(stderr, "Usage: %s [-a bindto] [-p port]\n", argv[0]);
             exit(-1);
@@ -232,24 +233,21 @@ int main(int argc, char **argv) {
     }
 
     uv_loop_init(&loop);
-
-    uv_tcp_init(&loop, &skt);    //поменял тут
+    uv_tcp_init(&loop, &skt);    
     uv_tcp_bind(&skt, (const struct sockaddr *)&addr, 0);
-    int r = uv_listen((uv_stream_t*) &skt, 128, on_new_connection);    //добавил тут
+    int r = uv_listen((uv_stream_t*) &skt, 128, on_new_connection);   
 
     if(verbose > 0) {
     
         printf("Listening [%s:%d]\n", host, port);
     }
     if (r) {
-        fprintf(stderr, "Listen error\n");  //добавил тут
+        fprintf(stderr, "Listen error\n");  
         return 1;
     }
     uv_signal_init(&loop, &sig);
     uv_signal_start(&sig, wait_signal, SIGINT);
     uv_run(&loop, UV_RUN_DEFAULT);
-    
-
     uv_loop_close(&loop);
 }
 
