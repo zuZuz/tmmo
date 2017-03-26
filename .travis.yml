@@ -14,7 +14,7 @@ script:
 - make
 
 after_success:
-- bash set_tags.sh
+- bash deploy.sh
 
 before_deploy:
 - tar czf client.tar.gz bin/client/
