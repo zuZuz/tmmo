@@ -1,3 +1,15 @@
+	
+
+###	
+	Project includes:
+
+1. UDP Client (Zxobi)
+2. UDP Server (zuZuz)
+3. Own simple database implementation (ditrol)
+4. World Generator & AI (prestoV)
+
+
+
 База данных типа ключ\значение с TCP доступом. 
 
 
