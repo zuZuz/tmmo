@@ -5,7 +5,7 @@
 extern double sqrt(double);
 extern double pow(double, double);
 
-character_t* character_new(int position_x, int position_y, char *name, character_race_t race, int hp, int lvl, clock_t step_time, bool is_player)
+character_t* character_new(int position_x, int position_y, char *name, character_race_t race, int lvl, clock_t step_time, bool is_player)
 {
     character_t* new_char = malloc(sizeof(character_t));
     new_char->position.x = position_x;
@@ -15,7 +15,6 @@ character_t* character_new(int position_x, int position_y, char *name, character
     new_char->step_time = step_time;
     new_char->target = NULL;
     new_char->next_step = nowhere;
-    new_char->hp = hp;
     new_char->lvl = lvl;
     new_char->race = race;
     new_char->is_player = is_player;
@@ -28,19 +27,21 @@ character_t* character_new(int position_x, int position_y, char *name, character
             new_char->characteristics.armor = 5;
             new_char->characteristics.evasion = 2;
             new_char->characteristics.power = 10;
+            new_char->characteristics.hp = 100;
             break;
 
         case beast:
             new_char->characteristics.armor = 2;
             new_char->characteristics.evasion = 2;
             new_char->characteristics.power = 13;
+            new_char->characteristics.hp = 100;
             break;
     }
 
     new_char->characteristics.armor *= lvl;
     new_char->characteristics.evasion *= lvl;
     new_char->characteristics.power *= lvl;
-    new_char->hp *= lvl;
+    new_char->characteristics.hp *= lvl;
 
 
     return new_char;
@@ -99,7 +100,7 @@ static int character_damage(character_t *character, character_t *target)
     if(damage < 0)
         damage = 0;
 
-    target->hp -= damage;
+    target->characteristics.hp -= damage;
 
     return damage;
 }
@@ -118,7 +119,7 @@ bool character_attack(character_t *character, characters_t *characters)
      * DEBUG INFO
      */
     printf("try attack %s(%i hp, %i lvl) to %s(%i hp, %i lvl), dist = %f\n",
-           character->name, character->hp, character->lvl, character->target->name, character->target->hp, character->target->lvl, dist);
+           character->name, character->characteristics.hp, character->lvl, character->target->name, character->target->characteristics.hp, character->target->lvl, dist);
 
 
     if(dist < 2)
@@ -127,7 +128,7 @@ bool character_attack(character_t *character, characters_t *characters)
         character_damage(character, character->target);
         character->target->target = character;
 
-        if(character->target->hp <= 0)
+        if(character->target->characteristics.hp <= 0)
         {
             character_remove(characters, character->target);
             character->target = NULL;
