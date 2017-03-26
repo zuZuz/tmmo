@@ -5,16 +5,16 @@ static GdkPixbuf* objects[OBJECT_COUNT];
 
 static void load_images()
 {
-    surfaces[soil] = gdk_pixbuf_new_from_file("src/client/gui/map_surf/soil.jpg", NULL);
-    surfaces[sand] = gdk_pixbuf_new_from_file("src/client/gui/map_surf/sand.jpg", NULL);
-    surfaces[grass] = gdk_pixbuf_new_from_file("src/client/gui/map_surf/grass.jpg", NULL);
-    surfaces[water] = gdk_pixbuf_new_from_file("src/client/gui/map_surf/water.jpg", NULL);
-    surfaces[empty] = gdk_pixbuf_new_from_file("src/client/gui/map_surf/empty.jpg", NULL);
-    surfaces[wall] = gdk_pixbuf_new_from_file("src/client/gui/map_surf/wall.jpg", NULL);
-    surfaces[floor] = gdk_pixbuf_new_from_file("src/client/gui/map_surf/floor.jpg", NULL);
-    surfaces[unknown] = gdk_pixbuf_new_from_file("src/client/gui/map_surf/unknown.jpg", NULL);
+    surfaces[soil] = gdk_pixbuf_new_from_file("map_surf/soil.jpg", NULL);
+    surfaces[sand] = gdk_pixbuf_new_from_file("map_surf/sand.jpg", NULL);
+    surfaces[grass] = gdk_pixbuf_new_from_file("map_surf/grass.jpg", NULL);
+    surfaces[water] = gdk_pixbuf_new_from_file("map_surf/water.jpg", NULL);
+    surfaces[empty] = gdk_pixbuf_new_from_file("map_surf/empty.jpg", NULL);
+    surfaces[wall] = gdk_pixbuf_new_from_file("map_surf/wall.jpg", NULL);
+    surfaces[floor] = gdk_pixbuf_new_from_file("map_surf/floor.jpg", NULL);
+    surfaces[unknown] = gdk_pixbuf_new_from_file("map_surf/unknown.jpg", NULL);
 
-    objects[character] = gdk_pixbuf_new_from_file("src/client/gui/map_obj/character.jpg", NULL);
+    objects[character] = gdk_pixbuf_new_from_file("map_obj/character.jpg", NULL);
 }
 
 static void clear_surface (cairo_surface_t *surface)

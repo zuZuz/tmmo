@@ -33,7 +33,7 @@ server: $(SERVER_OBJ)
 
 client: $(CLIENT_OBJ)
 	$(CC) -o bin/client/$(CLIENT) build/client/*.o $(GTKFLAGS)
-	cp src/client/gui/main.glade bin/client/
+	cp -r src/client/gui/* bin/client/
 
 build/server/%.o: src/server/%.c
 	$(CC) -c -o $@ $< $(CFLAGS) $(PRCSSR_INCFLAGS)
