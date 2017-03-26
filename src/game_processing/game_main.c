@@ -1,5 +1,6 @@
 #include "game_main.h"
 #include "item.h"
+#include <stdbool.h>
 #include <unistd.h>
 
 union_buildings_t barracks = {NULL, 0};
@@ -10,32 +11,28 @@ union_buildings_t academies = {NULL, 0};
 
 characters_t characters;
 
-map_point_t* _map;
-size_t _msize_x;
-size_t _msize_y;
+map_point_t* map;
+size_t msize_x, msize_y;
+size_t buildings_cnt;
+building_t *buildings;
 
 static void game_tick();
 
 
-int game_init(char *map_name)
+bool game_init(char *map_name)
 {
     FILE *fmap;
-
-    size_t msize_x, msize_y;
-    size_t buildings_cnt;
-    building_t *buildings;
 
     if(map_name == NULL)
     {
         printf("mapfile should be specified\n");
-        return 1;
+        return false;
     }
 
     fmap = fopen(map_name, "r");
     if (fmap == NULL)
     {
-        printf("can't open mapfile: %s\n", map_name);
-        return 1;
+        return false;
     }
 
     fread(&buildings_cnt, sizeof(size_t), 1, fmap);
@@ -48,7 +45,7 @@ int game_init(char *map_name)
     fread(&msize_x, sizeof(size_t), 1, fmap);
     msize_y = msize_x;
 
-    map_point_t *map = malloc( msize_y * msize_x * sizeof(map_point_t) );
+    map = malloc( msize_y * msize_x * sizeof(map_point_t) );
 
     fread(map, msize_x * msize_y * sizeof(map_point_t), 1, fmap);
 
@@ -62,15 +59,12 @@ int game_init(char *map_name)
                buildings[i].point.name_id, buildings[i].point.x, buildings[i].point.y, buildings[i].size_x, buildings->size_y);
     }
 
-    game_start(map, msize_x, msize_y, buildings, buildings_cnt);
+    return true;
 }
 
 
-void game_start(map_point_t *map, size_t msize_x, size_t msize_y, building_t *buildings, size_t buildings_cnt)
+void game_start(bool *is_stopped)
 {
-    _map = map;
-    _msize_x = msize_x;
-    _msize_y = msize_y;
 
     for(int i = 0; i < buildings_cnt; i++)
     {
@@ -111,7 +105,7 @@ void game_start(map_point_t *map, size_t msize_x, size_t msize_y, building_t *bu
     printf("academies: %zu\n", academies.buildings_cnt);
 
 
-    while(1)
+    while( !(*is_stopped) )
     {
         game_tick();
 
@@ -129,11 +123,11 @@ static void game_tick()
              || ( (clock() - characters.arr[i]->step_start_time) <= characters.arr[i]->step_time) )
             continue;
 
-        (_map + characters.arr[i]->position.y * _msize_x + characters.arr[i]->position.x)->child_object_type = nothing;
-        (_map + characters.arr[i]->position.y * _msize_x + characters.arr[i]->position.x)->child_object = NULL;
+        (map + characters.arr[i]->position.y * msize_x + characters.arr[i]->position.x)->child_object_type = nothing;
+        (map + characters.arr[i]->position.y * msize_x + characters.arr[i]->position.x)->child_object = NULL;
 
         character_find_target(characters.arr[i], &characters);
-        characters.arr[i]->next_step = character_move_to_target(characters.arr[i], _msize_x, _msize_y, _map);
+        characters.arr[i]->next_step = character_move_to_target(characters.arr[i], msize_x, msize_y, map);
         characters.arr[i]->step_start_time = clock();
 
         switch (characters.arr[i]->next_step)
@@ -155,12 +149,12 @@ static void game_tick()
                 break;
 
             case nowhere:
-                character_attack(characters.arr[i], &characters, _msize_x, _map, &i);
+                character_attack(characters.arr[i], &characters, msize_x, map, &i);
                 break;
         }
 
-        (_map + characters.arr[i]->position.y * _msize_x + characters.arr[i]->position.x)->child_object_type = character;
-        (_map + characters.arr[i]->position.y * _msize_x + characters.arr[i]->position.x)->child_object = characters.arr[i];
+        (map + characters.arr[i]->position.y * msize_x + characters.arr[i]->position.x)->child_object_type = character;
+        (map + characters.arr[i]->position.y * msize_x + characters.arr[i]->position.x)->child_object = characters.arr[i];
 
 
         /*
@@ -168,7 +162,7 @@ static void game_tick()
          *
         printf("after character moved \"%s\" pos: %i, %i, target: %p, child_object: %i, next_step: %i\n", characters.arr[i]->name, characters.arr[i]->position.x, characters.arr[i]->position.y,
                characters.arr[i]->target,
-               (_map + characters.arr[i]->position.y * _msize_x + characters.arr[i]->position.x)->child_object_type, characters.arr[i]->next_step );
+               (map + characters.arr[i]->position.y * msize_x + characters.arr[i]->position.x)->child_object_type, characters.arr[i]->next_step );
 
         for(int j = 0; j < characters.arr[i]->items.count; j++)
         {

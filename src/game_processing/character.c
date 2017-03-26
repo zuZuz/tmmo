@@ -206,6 +206,9 @@ direction_t character_move_to_target(character_t *character, size_t _msize_x, si
                                         && ( ((_map + (character->position.y - 1)*_msize_x + character->position.x)->surface != empty)
                                              || ((_map + (character->position.y - 1)*_msize_x + character->position.x)->child_object_type != nothing) );
                 break;
+
+            case nowhere:
+                break;
         }
 
         return player_step_avaliable ? character->next_step : nowhere;
