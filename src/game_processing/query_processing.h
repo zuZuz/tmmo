@@ -9,6 +9,6 @@
 #define QUERY_PROCESSING_H
 
 void query_processing_new(void *message);
-void set_out_queue(queue_t* _out_queue);
+void query_processing_set_out_queue(queue_t* _out_queue);
 
 #endif //QUERY_PROCESSING_H

@@ -42,7 +42,7 @@ void query_processing_new(void *message)
     }
 }
 
-void set_out_queue(queue_t* _out_queue)
+void query_processing_set_out_queue(queue_t* _out_queue)
 {
     out_queue = _out_queue;
 }
