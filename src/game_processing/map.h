@@ -33,7 +33,8 @@ typedef struct map_point
     int y;
     ground_type_t ground;
     surface_type_t surface;
-    object_type_t child_object;
+    object_type_t child_object_type;
+    void *child_object;
     int name_id;
     size_t region;
 } map_point_t;
