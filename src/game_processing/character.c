@@ -131,10 +131,10 @@ bool character_attack(character_t *character, characters_t *characters, size_t _
 
     /*
      * DEBUG INFO
-     */
+
     printf("try attack %s(%i hp, %i lvl) to %s(%i hp, %i lvl), dist = %f\n",
            character->name, character->characteristics.hp, character->lvl, character->target->name, character->target->characteristics.hp, character->target->lvl, dist);
-
+    */
 
     if(dist < 2)
     {

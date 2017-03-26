@@ -24,6 +24,7 @@ typedef struct union_buildings
     size_t buildings_cnt;
 } union_buildings_t;
 
-void game_init(map_point_t *map, size_t msize_x, size_t msize_y, building_t *buildings, size_t buildings_cnt);
+void game_start(map_point_t *map, size_t msize_x, size_t msize_y, building_t *buildings, size_t buildings_cnt);
+int game_init(char *map_name);
 
 #endif //GAME_MAIN_H

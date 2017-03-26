@@ -1,10 +1,11 @@
 #include "game_functions.h"
 #include "str_hashtable.h"
+#include "shared_funcs.h"
 #include <string.h>
 #include <time.h>
 
 //the number of gaming functions
-#define FUNCS_CNT 1
+#define FUNCS_CNT 2
 
 typedef struct func_name
 {
@@ -15,6 +16,13 @@ typedef struct func_name
 
 static str_hashtable_t *funcs_hashtable;
 
+static void gfunc_go(msg_t *msg, char *args)
+{
+    char *answ = get_word(&args);
+
+    msg->len = strlen(answ);
+    memcpy(msg->body, answ, msg->len + 1);
+}
 
 static void gfunc_hello(msg_t *msg, char *args)
 {
@@ -44,6 +52,7 @@ bool gfunc_init(char **err)
     func_name_t funcs[FUNCS_CNT] =
             {
                     {gfunc_hello, "hello"},
+                    {gfunc_go, "go"},
             };
 
     for(int i = 0; i < FUNCS_CNT; i++)
