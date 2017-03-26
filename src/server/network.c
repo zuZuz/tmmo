@@ -105,14 +105,14 @@ msg_t* msg_init(const conn_t* con)
 		msg->addr = con->addr;
 	}
 
-	memset(msg->key, 0, KEY_LEN);
-	memset(msg->body, 0, MAX_LEN);
+	memset(msg->key, 0, TOKEN_LEN);
+	memset(msg->body, 0, BODY_LEN);
 	return msg;
 }
 
 void msg_set_key(msg_t* msg, const char* key)
 {
-	memcpy(msg->key, key, KEY_LEN);
+	memcpy(msg->key, key, TOKEN_LEN);
 }
 
 void msg_set_type(msg_t* msg, msg_type_t type)

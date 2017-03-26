@@ -42,6 +42,7 @@ static cfg_t* config_default()
 	config_setopt(cfg, "max_players", "100");
 	config_setopt(cfg, "server_port", "27015");
 	config_setopt(cfg, "shard_enabled", "false");
+	config_setopt(cfg, "map_name", "ver1.map");
 
 	config_save("server.conf", cfg);
 	return cfg;
@@ -70,6 +71,7 @@ int main(int argc, char* argv[])
 
 	size_t max_players;
 	unsigned short server_port;
+	char *map_name;
 
 	/* 
 	 *
@@ -114,6 +116,7 @@ int main(int argc, char* argv[])
 	 */
 	max_players = atoi(config_getopt(cfg, "max_players"));
 	server_port = atoi(config_getopt(cfg, "server_port"));
+	map_name = config_getopt(cfg, "map_name");
 
 	/* 
 	 *
@@ -144,6 +147,9 @@ int main(int argc, char* argv[])
 	handler = threadpool_create(2);
 	in = threadpool_get_jqueue(handler);
 	out = queue_init();
+
+	/* set out queue */
+	query_processing_set_out_queue(out);
 
 	/* running I/O server threads */
 	run_output_thread(&output, out, con);

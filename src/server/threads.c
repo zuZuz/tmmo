@@ -27,7 +27,7 @@ static void* receiver_thread(void* arg)
 		}
 
 		printf("recv: %s \n", msg->body);
-        jqueue_add_job(in, query_processing_new, msg, out);
+        jqueue_add_job(in, query_processing_new, msg);
 		msg = NULL;
 	}
 
