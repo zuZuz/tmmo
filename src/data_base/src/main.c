@@ -160,6 +160,21 @@ out:
     free(buf->base);
 }
 
+void serialize(FILE* file)
+{
+    node* link;
+    struct sglib_node_iterator it;
+
+    printf("saving to file\n");
+
+    for(link=sglib_node_it_init(&it, root); link != NULL; link=sglib_node_it_next(&it)) {
+        fprintf(file, "%s\x01%s\n", link->key, link->data);
+
+        free(link->key);
+        free(link->data);
+        free(link);
+    }
+}
 
 void on_new_connection(uv_stream_t *server, int status)
 {
