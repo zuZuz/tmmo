@@ -8,7 +8,8 @@
 #include <time.h>
 
 //the number of gaming functions
-#define FUNCS_CNT 4
+#define FUNCS_CNT 5
+
 
 typedef struct func_name
 {
@@ -23,13 +24,6 @@ static void gfunc_say(msg_t *msg, msg_t **reply_msg, char *args)
 {
     character_t *player;
     player = character_get_by_addr(&(msg->addr));
-
-    *reply_msg = msg_init(NULL);
-    (*reply_msg)->addr = msg->addr;
-    strcpy((*reply_msg)->key, msg->key);
-
-    (*reply_msg)->len = (size_t)sprintf((*reply_msg)->body, "%s: %s", player->name, args) + 1;
-    (*reply_msg)->type = chat_msg;
 
     for(int i = 0; i < game_get_characters()->count; i++)
     {
@@ -49,10 +43,18 @@ static void gfunc_say(msg_t *msg, msg_t **reply_msg, char *args)
 
 }
 
+static void gfunc_bot(msg_t *msg, msg_t **reply_msg, char *args)
+{
+    character_t *bot = character_new(character_get_by_addr(&(msg->addr))->position.x + 1, 138, "Bot1", beast, 1, 2500 , false, NULL);
+    bot->aggression = true;
+    character_add(game_get_characters(), bot);
+}
+
 void gfunc_getinfo(msg_t *msg, msg_t **reply_msg, char *args)
 {
     character_t *player;
     player = character_get_by_addr(&(msg->addr));
+r
 
     *reply_msg = msg_init(NULL);
     (*reply_msg)->addr = msg->addr;
@@ -77,6 +79,7 @@ void gfunc_map(msg_t *msg, msg_t **reply_msg, char *args)
     character_t *player;
     map_point_t *map = game_get_map();
     size_t msize_x = game_get_msize_x();
+
 
     player = character_get_by_addr(&(msg->addr));
 
@@ -170,6 +173,7 @@ static void gfunc_go(msg_t *msg, msg_t **reply_msg, char *args)
 
 }
 
+
 static void gfunc_hello(msg_t *msg, msg_t **reply_msg, char *args)
 {
     *reply_msg = msg_init(NULL);
@@ -204,6 +208,7 @@ bool gfunc_init(char **err)
                     {gfunc_say, "say"},
                     {gfunc_hello, "hello"},
                     {gfunc_hello, "hi"},
+                    {gfunc_bot, "bot"}
             };
 
     for(int i = 0; i < FUNCS_CNT; i++)

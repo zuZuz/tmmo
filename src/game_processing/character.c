@@ -60,6 +60,9 @@ character_t* character_get_by_addr(struct sockaddr_in *addr)
 {
     for(int i = 0; i < game_get_characters()->count; i++)
     {
+        if( !(game_get_characters()->arr[i]->is_player))
+            continue;
+
         if(compare_address(game_get_characters()->arr[i]->addr, addr))
         {
             return game_get_characters()->arr[i];
@@ -168,13 +171,8 @@ bool character_attack(character_t *character, characters_t *characters, size_t _
 
         if(character->target->characteristics.hp <= 0)
         {
-            character_remove(characters, character->target);
-            character->target = NULL;
-        }
+        //    character_remove(characters, character->target);
 
-        if(character->is_player)
-        {
-            character->aggression = false;
             character->target = NULL;
         }
 

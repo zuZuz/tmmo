@@ -70,6 +70,14 @@ void query_processing_new(void *message)
             gfunc_getinfo((msg_t*)message, &reply_msg, NULL);
             break;
 
+        case online_list:
+            have_asnw = true;
+            break;
+
+        case chat_msg:
+            have_asnw = true;
+            break;
+
         default:
             return;
     }

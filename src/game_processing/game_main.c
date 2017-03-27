@@ -165,25 +165,51 @@ static void game_tick()
             characters.arr[character_index_tick]->aggression = false;
         }
 
-
-        for(int i = 0; i < characters.count; i++)
+        for(int x = characters.arr[character_index_tick]->position.x - 4; x <= characters.arr[character_index_tick]->position.x + 4; x++)
         {
-            if(!(characters.arr[i]->is_player))
-                continue;
+            for(int y = characters.arr[character_index_tick]->position.y - 4; y <= characters.arr[character_index_tick]->position.y + 4; y++)
+            {
+                if( (map + y * msize_x + x)->child_object_type != nothing)
+                {
+                    if( ((map + y * msize_x + x)->child_object != NULL) && ( ((character_t*)((map + y * msize_x + x)->child_object))->is_player ) )
+                    {
+                        character_t *charac = (character_t*)((map + y * msize_x + x)->child_object);
 
-            msg_t *message;
+                        msg_t *message;
 
-            message = msg_init(NULL);
-            message->addr = *(characters.arr[i]->addr);
-            message->type = map_update;
+                        message = msg_init(NULL);
+                        message->addr = *(charac->addr);
+                        message->type = map_update;
 
-            query_processing_new(message);
+                        query_processing_new(message);
 
-            message = msg_init(NULL);
-            message->addr = *(characters.arr[i]->addr);
-            message->type = char_info;
+                        message = msg_init(NULL);
+                        message->addr = *(charac->addr);
+                        message->type = char_info;
 
-            query_processing_new(message);
+                        query_processing_new(message);
+
+                        message = msg_init(NULL);
+                        message->addr = *(charac->addr);
+                        message->type = online_list;
+                        message->body[0] = 0;
+
+                        for(int j = 0; j < characters.count; j++)
+                        {
+                            if ( !(characters.arr[j]->is_player) || (strlen(characters.arr[j]->name) == 0) )
+                                continue;
+
+                            strcat(message->body, characters.arr[j]->name);
+                            strcat(message->body, "\n");
+                        }
+
+                        message->len = strlen(message->body) + 1;
+
+                        if(message->len > 1)
+                            query_processing_new(message);
+                    }
+                }
+            }
 
         }
 

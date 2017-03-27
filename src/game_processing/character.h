@@ -1,7 +1,8 @@
 #include <time.h>
 #include <stdbool.h>
 #include "map.h"
-#include "network.h"
+#include <network.h>
+
 
 #ifndef CHARACTER_H
 #define CHARACTER_H
