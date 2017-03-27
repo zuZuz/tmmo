@@ -165,7 +165,6 @@ static void game_tick()
             characters.arr[character_index_tick]->aggression = false;
         }
 
-
         for(int x = characters.arr[character_index_tick]->position.x - 4; x <= characters.arr[character_index_tick]->position.x + 4; x++)
         {
             for(int y = characters.arr[character_index_tick]->position.y - 4; y <= characters.arr[character_index_tick]->position.y + 4; y++)
@@ -211,6 +210,7 @@ static void game_tick()
                     }
                 }
             }
+
         }
 
 

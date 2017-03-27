@@ -3,6 +3,7 @@
 #include "map.h"
 #include <network.h>
 
+
 #ifndef CHARACTER_H
 #define CHARACTER_H
 

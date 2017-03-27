@@ -10,6 +10,7 @@
 //the number of gaming functions
 #define FUNCS_CNT 5
 
+
 typedef struct func_name
 {
     void (*func)(msg_t*, msg_t**, char*);
@@ -49,12 +50,11 @@ static void gfunc_bot(msg_t *msg, msg_t **reply_msg, char *args)
     character_add(game_get_characters(), bot);
 }
 
-
-
 void gfunc_getinfo(msg_t *msg, msg_t **reply_msg, char *args)
 {
     character_t *player;
     player = character_get_by_addr(&(msg->addr));
+r
 
     *reply_msg = msg_init(NULL);
     (*reply_msg)->addr = msg->addr;
@@ -79,6 +79,7 @@ void gfunc_map(msg_t *msg, msg_t **reply_msg, char *args)
     character_t *player;
     map_point_t *map = game_get_map();
     size_t msize_x = game_get_msize_x();
+
 
     player = character_get_by_addr(&(msg->addr));
 
@@ -171,6 +172,7 @@ static void gfunc_go(msg_t *msg, msg_t **reply_msg, char *args)
     }
 
 }
+
 
 static void gfunc_hello(msg_t *msg, msg_t **reply_msg, char *args)
 {
