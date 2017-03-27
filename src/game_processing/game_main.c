@@ -107,29 +107,6 @@ void game_start(bool *is_stopped)
     printf("taverns: %zu\n", taverns.buildings_cnt);
     printf("academies: %zu\n", academies.buildings_cnt);
 
-    character_t *bot1 = character_new(100, 138, "Bot1", beast, 1, 5000 , false, NULL);
-    bot1->aggression = true;
-
-    character_t *bot2 = character_new(102, 138, "Bot2", beast, 1, 2500 , false, NULL);
-    bot2->aggression = true;
-
-    character_t *bot3 = character_new(104, 138, "Bot3", beast, 1, 1000 , false, NULL);
-    bot3->aggression = true;
-
-    character_t *bot4 = character_new(130, 138, "Bot4", beast, 1, 3000 , false, NULL);
-    bot4->aggression = true;
-
-    character_t *bot5 = character_new(120, 140, "Bot5", beast, 1, 4000 , false, NULL);
-    bot5->aggression = true;
-
-
-    character_add(game_get_characters(), bot1);
-    character_add(game_get_characters(), bot2);
-    character_add(game_get_characters(), bot3);
-    character_add(game_get_characters(), bot4);
-    character_add(game_get_characters(), bot5);
-
-
 
     while( !(*is_stopped) )
     {
@@ -189,43 +166,51 @@ static void game_tick()
         }
 
 
-        for(int i = 0; i < characters.count; i++)
+        for(int x = characters.arr[character_index_tick]->position.x - 4; x <= characters.arr[character_index_tick]->position.x + 4; x++)
         {
-            if(!(characters.arr[i]->is_player))
-                continue;
-
-            msg_t *message;
-
-            message = msg_init(NULL);
-            message->addr = *(characters.arr[i]->addr);
-            message->type = map_update;
-
-            query_processing_new(message);
-
-            message = msg_init(NULL);
-            message->addr = *(characters.arr[i]->addr);
-            message->type = char_info;
-
-            query_processing_new(message);
-
-            message = msg_init(NULL);
-            message->addr = *(characters.arr[i]->addr);
-            message->type = online_list;
-            message->body[0] = 0;
-
-            for(int j = 0; j < characters.count; j++)
+            for(int y = characters.arr[character_index_tick]->position.y - 4; y <= characters.arr[character_index_tick]->position.y + 4; y++)
             {
-                if ( !(characters.arr[j]->is_player) || (strlen(characters.arr[j]->name) == 0) )
-                    continue;
+                if( (map + y * msize_x + x)->child_object_type != nothing)
+                {
+                    if( ((map + y * msize_x + x)->child_object != NULL) && ( ((character_t*)((map + y * msize_x + x)->child_object))->is_player ) )
+                    {
+                        character_t *charac = (character_t*)((map + y * msize_x + x)->child_object);
 
-                strcat(message->body, characters.arr[j]->name);
-                strcat(message->body, "\n");
+                        msg_t *message;
+
+                        message = msg_init(NULL);
+                        message->addr = *(charac->addr);
+                        message->type = map_update;
+
+                        query_processing_new(message);
+
+                        message = msg_init(NULL);
+                        message->addr = *(charac->addr);
+                        message->type = char_info;
+
+                        query_processing_new(message);
+
+                        message = msg_init(NULL);
+                        message->addr = *(charac->addr);
+                        message->type = online_list;
+                        message->body[0] = 0;
+
+                        for(int j = 0; j < characters.count; j++)
+                        {
+                            if ( !(characters.arr[j]->is_player) || (strlen(characters.arr[j]->name) == 0) )
+                                continue;
+
+                            strcat(message->body, characters.arr[j]->name);
+                            strcat(message->body, "\n");
+                        }
+
+                        message->len = strlen(message->body) + 1;
+
+                        if(message->len > 1)
+                            query_processing_new(message);
+                    }
+                }
             }
-
-            message->len = strlen(message->body) + 1;
-
-            if(message->len > 1)
-                query_processing_new(message);
         }
 
 

@@ -171,13 +171,7 @@ bool character_attack(character_t *character, characters_t *characters, size_t _
 
         if(character->target->characteristics.hp <= 0)
         {
-            character_remove(characters, character->target);
-            character->target = NULL;
-        }
-
-        if(character->is_player)
-        {
-            character->aggression = false;
+        //    character_remove(characters, character->target);
             character->target = NULL;
         }
 
