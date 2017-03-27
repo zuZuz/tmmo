@@ -1,6 +1,6 @@
 	
 
-# tmmo project (Text-based MMORPG)
+# tmmo project (Text-based MMORPG) [![Build Status](https://travis-ci.org/zuZuz/tmmo.svg?branch=master)](https://travis-ci.org/zuZuz/tmmo)
 
 Project includes:
 
@@ -9,58 +9,32 @@ Project includes:
 3. Own simple database implementation ([ditrol](https://github.com/ditrol))
 4. World Generator & AI & GamePlay ([prestoV](https://github.com/prestoV))
 
+## client
 
+TODO
 
-База данных типа ключ\значение с TCP доступом. 
+## server
 
+TODO
 
-## Использовавшиеся библиотеки
+## map generator/AI/gameplay
+
+TODO
+
+## key-value database
+### requirements
 
 - sglib 1.0.4 
 - libuv 1.5.0
 
-## Протокол
+### syntax
 
-Команды отправляются через сокет по конфигурируемому порту.
+    <cmd><key>\x00[value]
 
-Все команды приедрживаются стандартного вида:
+### supported commands
 
-    <команда><ключ>[<значение>]
-
-Все ответы соответствуют одному и тому же формату.
-
-<команда> - это один байт, указывающий действие бд:
-
-- S: Записать в базу ключ\значение.
-- G: Получить значение по данному ключу.
-- D: Удалить по ключу.
-- X: Отключение.
-
-
-### eXit
-
-Сообщает серверу о отключении. 
-Не требует ключей или значений.
-
-### Get <ключ>
-
-Возвращает значение для данного ключа, если такое имеется.
-Если ключ не существует, ничего не возвращается.
-
-    g<ключ>\x00
-
-### Set <ключ> <значение>
-
-Устанавливает значение для данного ключа, добавляя его, если оно еще не существует.
-
-Возвращает ключ и значение
-
-    s<ключ>\x00<значение>
-
-### Delete <ключ>
-
-Удаляет ключ, возвращает значение, если оно существовало.
-
-    d<ключ>\x00
-    d<ключ>\x00<значение>
+- S: set value
+- G: get value
+- D: delete value
+- X: shutdown
 
