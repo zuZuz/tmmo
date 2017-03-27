@@ -16,7 +16,6 @@ typedef struct node {
     char *data;
     char *key;
     size_t data_len;
-
     struct node *left;
     struct node *right;
     char colour_field;
@@ -54,7 +53,7 @@ static void send_reply(uv_stream_t* handle, char cmd, char* key, char *data, siz
     buffer = malloc(total_len);
     buffer[0] = cmd;
     strcpy(&buffer[1], key);
-    if(data_len > 0) {
+    if (data_len > 0) {
         memcpy(&buffer[key_len+2], data, data_len);
     }
     buf = uv_buf_init(buffer, total_len);
@@ -67,13 +66,12 @@ static void on_recv(uv_stream_t* handle, ssize_t nread, const uv_buf_t* buf) {
     size_t key_len;
     int result;
 
-    if(nread < 0) {
+    if (nread < 0) {
         return;
     } else {
         tmp.key = &buf->base[1];
         key_len = strnlen(tmp.key, nread-1);
-        if(key_len == nread-1) {
-            
+        if (key_len == nread-1) {
             goto out;
         }
         tmp.data = &buf->base[key_len+2];
@@ -88,7 +86,7 @@ static void on_recv(uv_stream_t* handle, ssize_t nread, const uv_buf_t* buf) {
 
         case 'G': 
             link = sglib_node_find_member(root, &tmp);
-            if(link == NULL) {
+            if (link == NULL) {
                 send_reply(handle, 'g', tmp.key, NULL, 0);
             } else {
                 send_reply(handle, 'g', link->key, link->data, link->data_len);
@@ -98,14 +96,14 @@ static void on_recv(uv_stream_t* handle, ssize_t nread, const uv_buf_t* buf) {
         case 'A':   
         case 'S':   
             link = sglib_node_find_member(root, &tmp);
-            if(link == NULL) {
+            if (link == NULL) {
                 link = malloc(sizeof(node));
                 link->key = strdup(tmp.key);
                 link->data_len = tmp.data_len;
                 link->data = malloc(link->data_len);
                 memcpy(link->data, &buf->base[key_len+2], link->data_len);
                 sglib_node_add(&root, link);
-            } else if(buf->base[0] == 'S') {
+            } else if (buf->base[0] == 'S') {
                 link->data_len = tmp.data_len;
                 link->data = realloc(link->data, link->data_len);
                 memcpy(link->data, &buf->base[key_len+2], link->data_len);
@@ -115,7 +113,7 @@ static void on_recv(uv_stream_t* handle, ssize_t nread, const uv_buf_t* buf) {
 
         case 'D':  
             result = sglib_node_delete_if_member(&root, &tmp, &link);
-            if(result > 0) {
+            if (result > 0) {
                 send_reply(handle, 'd', link->key, link->data, link->data_len);
                 free(link->key);
                 free(link->data);
@@ -126,7 +124,7 @@ static void on_recv(uv_stream_t* handle, ssize_t nread, const uv_buf_t* buf) {
             break;
 
         case 'Z':   
-            for(link=sglib_node_it_init(&it, root); link != NULL; link=sglib_node_it_next(&it)) {
+            for (link=sglib_node_it_init(&it, root); link != NULL; link=sglib_node_it_next(&it)) {
                 free(link->key);
                 free(link->data);
                 free(link);
@@ -167,7 +165,7 @@ void serialize(FILE* file)
 
     printf("saving to file\n");
 
-    for(link=sglib_node_it_init(&it, root); link != NULL; link=sglib_node_it_next(&it)) {
+    for (link=sglib_node_it_init(&it, root); link != NULL; link=sglib_node_it_next(&it)) {
         fprintf(file, "%s\x01%s\n", link->key, link->data);
 
         free(link->key);
@@ -190,7 +188,6 @@ void deserialize(FILE* file)
 
         key = strtok(buffer, "\x01");
         value = strtok(NULL, "\x01");
-
         link = malloc(sizeof(node));
         link->key = strdup(key);
         link->data_len = strlen(value);
@@ -276,13 +273,13 @@ int main(int argc, char **argv) {
 
     uv_ip4_addr(host, port, &addr);
 
-    if(verbose > 0) {
+    if (verbose > 0) {
         int i, c;
         uv_cpu_info_t *cpus;
 
         uv_cpu_info(&cpus, &c);
 
-        for(i=0; i<c; i++) {
+        for (i=0; i<c; i++) {
             printf("CPU %d: %s (%d MHz)\n", i, cpus[i].model, cpus[i].speed);
         }
         uv_free_cpu_info(cpus, c);
@@ -293,7 +290,7 @@ int main(int argc, char **argv) {
     uv_tcp_bind(&skt, (const struct sockaddr *)&addr, 0);
     int r = uv_listen((uv_stream_t*) &skt, 128, on_new_connection);   
 
-    if(verbose > 0) {
+    if (verbose > 0) {
     
         printf("Listening [%s:%d]\n", host, port);
     }
