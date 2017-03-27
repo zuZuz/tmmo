@@ -3,8 +3,8 @@
 
 #include <arpa/inet.h>
 
-#define MAX_LEN 1024
-#define KEY_LEN 33		// 32 + 1 for \0
+#define BODY_LEN 1024
+#define TOKEN_LEN 33		// 32 + 1 for \0
 
 enum flags
 {
@@ -15,9 +15,9 @@ enum flags
 
 enum msg_type_t
 {
-    conn_test = 0,
+	conn_test = 0,
 	user_msg,
-    main_msg,
+	main_msg,
 	chat_msg,
 	online_list,
 	map_update,
@@ -33,9 +33,9 @@ struct msg_t
 {
 	struct sockaddr_in addr;
 	msg_type_t type;
-	char key[KEY_LEN];
+	char key[TOKEN_LEN];
 	size_t len;
-	char body[MAX_LEN];
+	char body[BODY_LEN];
 };
 
 struct conn_t
@@ -44,31 +44,31 @@ struct conn_t
 	int socket;
 };
 
-conn_t* 
+conn_t*
 conn_init(char address[], port_t port, int flags);
 
-int 
+int
 conn_set_timeout(conn_t* con, unsigned long sec);
 
 void
 conn_destroy(conn_t* con);
 
-msg_t* 
+msg_t*
 msg_init(const conn_t* con);
 
-void 
+void
 msg_set_key(msg_t* msg, const char* key);
 
-void 
+void
 msg_set_type(msg_t* msg, msg_type_t type);
 
-void 
+void
 msg_set_body(msg_t* msg, const char* body);
 
-ssize_t 
+ssize_t
 msg_send(const conn_t* con, msg_t* msg);
 
-msg_t* 
+msg_t*
 msg_recv(const conn_t* con);
 
 void

@@ -1,0 +1,25 @@
+.window {
+	background-color: #1d1d1d;
+}
+
+.main_entry {
+	border-width: 5px;
+}
+
+.scrolled_win {
+	border-width: 3px;
+}
+
+.text_view {
+	background-color: #5A5A5A;
+	color: #F5F5F5;
+}
+
+.char_info_frame {
+	border: 0;
+}
+
+.char_info_frame GtkLabel {
+	color: #F5F5F5;
+	border-bottom: 2px dotted #5A5A5A;
+}

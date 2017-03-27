@@ -11,7 +11,7 @@
 static conn_t* conn_socket(port_t port)
 {
 	conn_t* con = malloc(sizeof(conn_t));
-	
+
 	if (!con)
 	{
 		return NULL;
@@ -32,8 +32,8 @@ static conn_t* conn_socket(port_t port)
 
 static conn_t* conn_bind(conn_t* con)
 {
-	if (bind(con->socket, (struct sockaddr*) 
-		&con->addr, sizeof(struct sockaddr)) == -1)
+	if (bind(con->socket, (struct sockaddr*)
+			&con->addr, sizeof(struct sockaddr)) == -1)
 	{
 		conn_destroy(con);
 		return NULL;
@@ -77,10 +77,10 @@ int conn_set_timeout(conn_t* con, unsigned long sec)
 	timeout.tv_usec = 0;
 
 	return setsockopt(
-		con->socket, 
-		SOL_SOCKET, 
-		SO_RCVTIMEO, 
-		&timeout, sizeof(timeout)
+			con->socket,
+			SOL_SOCKET,
+			SO_RCVTIMEO,
+			&timeout, sizeof(timeout)
 	);
 }
 
@@ -105,14 +105,14 @@ msg_t* msg_init(const conn_t* con)
 		msg->addr = con->addr;
 	}
 
-	memset(msg->key, 0, KEY_LEN);
-	memset(msg->body, 0, MAX_LEN);
+	memset(msg->key, 0, TOKEN_LEN);
+	memset(msg->body, 0, BODY_LEN);
 	return msg;
 }
 
 void msg_set_key(msg_t* msg, const char* key)
 {
-	memcpy(msg->key, key, KEY_LEN);
+	memcpy(msg->key, key, TOKEN_LEN);
 }
 
 void msg_set_type(msg_t* msg, msg_type_t type)
@@ -134,12 +134,12 @@ ssize_t msg_send(const conn_t* con, msg_t* msg)
 	}
 
 	return sendto(
-		con->socket,
-		&msg->type, 
-		sizeof(msg_t) - sizeof(struct sockaddr), 
-		NOFLAGS, 
-		(struct sockaddr*) &msg->addr, 
-		sizeof(struct sockaddr)
+			con->socket,
+			&msg->type,
+			sizeof(msg_t) - sizeof(struct sockaddr),
+			NOFLAGS,
+			(struct sockaddr*) &msg->addr,
+			sizeof(struct sockaddr)
 	);
 }
 
@@ -148,17 +148,17 @@ msg_t* msg_recv(const conn_t* con)
 	msg_t* msg;
 	unsigned size;
 	ssize_t received;
-	
+
 	size = sizeof(struct sockaddr);
 	msg = msg_init(NULL);
 
 	received = recvfrom(
-		con->socket, 
-		&msg->type, 
-		sizeof(msg_t) - sizeof(struct sockaddr),
-		NOFLAGS, 
-		(struct sockaddr*) &msg->addr, 
-		&size
+			con->socket,
+			&msg->type,
+			sizeof(msg_t) - sizeof(struct sockaddr),
+			NOFLAGS,
+			(struct sockaddr*) &msg->addr,
+			&size
 	);
 
 	if (received < 0)

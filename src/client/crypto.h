@@ -3,21 +3,20 @@
 
 #include <stdbool.h>
 #include <stdio.h>
-#include "network.h"
 
-void 
+void
 crypto_init();
 
 bool
 crypto_key_is_empty(char key[]);
 
-void 
-crypto_gen_key(char key[KEY_LEN], size_t len);
+void
+crypto_gen_key(char key[], size_t len);
 
-void 
+void
 crypto_encrypt(char str[], char key[]);
 
-void 
+void
 crypto_decrypt(char str[], char key[]);
 
 #endif

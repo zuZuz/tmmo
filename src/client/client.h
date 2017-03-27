@@ -1,7 +1,7 @@
 #ifndef _CLIENT_H
 #define _CLIENT_H
 
-#define CONN_CHECK_TIMEOUT 3
+#define CONN_CHECK_TIMEOUT 1
 
 #include <stdbool.h>
 #include "network.h"

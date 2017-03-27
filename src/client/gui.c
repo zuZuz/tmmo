@@ -17,6 +17,10 @@ static void activate(GtkApplication* app, gpointer user_data)
 {
     GtkBuilder  *builder;
 
+    GtkCssProvider *provider;
+    GdkDisplay *display;
+    GdkScreen *screen;
+
     builder = gtk_builder_new_from_file("src/client/gui/main.glade");
 
     main_win = g_malloc(sizeof(main_win_t));
@@ -63,6 +67,17 @@ static void activate(GtkApplication* app, gpointer user_data)
     g_signal_connect(init_win->entry, "activate", G_CALLBACK(sp_ip_enter), (gpointer)init_win->entry);
 
     gtk_application_add_window(app, GTK_WINDOW(init_win->window));
+
+    /*For CSS*/
+    provider = gtk_css_provider_new ();
+    display = gdk_display_get_default ();
+    screen = gdk_display_get_default_screen (display);
+    gtk_style_context_add_provider_for_screen (screen, GTK_STYLE_PROVIDER (provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+
+    GError *error = 0;
+    gtk_css_provider_load_from_file(provider, g_file_new_for_path("src/client/gui/style.css"), &error);
+    g_object_unref (provider);
+
 
     gtk_widget_show_all(init_win->window);
 }

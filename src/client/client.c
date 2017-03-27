@@ -7,7 +7,7 @@ static pthread_t server_worker;
 static conn_t *actv_conn;
 static bool pthr_is_active;
 
-static char key[KEY_LEN];
+static char key[TOKEN_LEN];
 
 static bool check_connection(conn_t* conn)
 {
@@ -26,7 +26,7 @@ static bool check_connection(conn_t* conn)
 
     if(msg->type != conn_test) return false;
 
-    memcpy(key, msg->key, KEY_LEN);
+    memcpy(key, msg->key, TOKEN_LEN);
     msg_destroy(msg);
 
     return true;
