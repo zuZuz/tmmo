@@ -1,6 +1,7 @@
 #include <time.h>
 #include <stdbool.h>
 #include "map.h"
+#include "network.h"
 
 #ifndef CHARACTER_H
 #define CHARACTER_H
@@ -60,7 +61,8 @@ typedef struct items
 
 typedef struct character
 {
-    char *name;
+    char name[128];
+    struct sockaddr_in *addr;
     character_race_t race;
     int id;
     int lvl;
@@ -86,12 +88,13 @@ typedef struct characters
 } characters_t;
 
 
-character_t* character_new(int position_x, int position_y, char *name, character_race_t race, int lvl, clock_t step_time, bool is_player);
+character_t* character_new(int position_x, int position_y, char *name, character_race_t race, int lvl, clock_t step_time, bool is_player, struct sockaddr_in *addr);
+character_t* character_get_by_addr(struct sockaddr_in *addr);
 void character_set_target(character_t *character, character_t *target);
 direction_t character_move_to_target(character_t *character, size_t _msize_x, size_t _msize_y, map_point_t* _map);
-void character_add(characters_t *characters, character_t *_character, size_t _msize_x, size_t _msize_y, map_point_t* _map);
-void character_remove(characters_t *characters, character_t *character, size_t _msize_x, map_point_t* _map, int *index);
-bool character_attack(character_t *character, characters_t *characters, size_t _msize_x, map_point_t* _map, int *index);
+void character_add(characters_t *characters, character_t *_character);
+void character_remove(characters_t *characters, character_t *character);
+bool character_attack(character_t *character, characters_t *characters, size_t _msize_x, map_point_t* _map);
 void character_find_target(character_t *character, characters_t *characters);
 void character_add_item(character_t *character, item_t *item);
 

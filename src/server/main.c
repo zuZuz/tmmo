@@ -5,6 +5,7 @@
 #include <game_functions.h>
 #include <threadpool.h>
 #include <job_queue.h>
+#include <game_main.h>
 
 #include "config.h"
 #include "crypto.h"
@@ -12,6 +13,7 @@
 #include "queue.h"
 #include "server.h"
 #include "threads.h"
+#include "player.h"
 
 static bool is_stopped = false;
 
@@ -42,7 +44,8 @@ static cfg_t* config_default()
 	config_setopt(cfg, "max_players", "100");
 	config_setopt(cfg, "server_port", "27015");
 	config_setopt(cfg, "shard_enabled", "false");
-	config_setopt(cfg, "map_name", "ver1.map");
+	config_setopt(cfg, "map", "ver1.map");
+	config_setopt(cfg, "timeout", "100");
 
 	config_save("server.conf", cfg);
 	return cfg;
@@ -55,6 +58,8 @@ int main(int argc, char* argv[])
 	 * variables
 	 *  
 	 */
+
+	char* map_name;
 	int opt;
 	char* config_file = "server.conf";
 
@@ -64,25 +69,28 @@ int main(int argc, char* argv[])
 
 	pthread_t input;
 	pthread_t output;
+	pthread_t game;
+	pthread_t server;
 
 	threadpool_t* handler;
 	jqueue_t* in;
 	queue_t* out;
+	players_t* players;
 
 	size_t max_players;
+	size_t timeout;
 	unsigned short server_port;
-	char *map_name;
 
 	/* 
 	 *
 	 * cli arguments parsing
 	 *  
 	 */
-	while ((opt = getopt(argc, argv, "hf:")) != -1)
+	while ((opt = getopt(argc, argv, "hc:m:")) != -1)
 	{
 		switch (opt)
 		{
-			case 'f': 
+			case 'c': 
 				config_file = optarg; 
 				break;
 			case 'h':
@@ -116,7 +124,16 @@ int main(int argc, char* argv[])
 	 */
 	max_players = atoi(config_getopt(cfg, "max_players"));
 	server_port = atoi(config_getopt(cfg, "server_port"));
-	map_name = config_getopt(cfg, "map_name");
+	timeout = atoi(config_getopt(cfg, "timeout"));
+	map_name = config_getopt(cfg, "map");
+
+	if (!game_init(map_name))
+	{
+		fprintf(stderr, "Cannot load map %s\n", map_name);
+		return EXIT_ERROR;
+	}
+
+	fprintf(stdout, "Loaded map from %s\n", map_name);
 
 	/* 
 	 *
@@ -131,8 +148,7 @@ int main(int argc, char* argv[])
 	}
 	else
 	{
-		fprintf(stdout, "Server tarted at port %d \n", server_port);
-		conn_set_timeout(con, 1);
+		fprintf(stdout, "Server started at port %d \n", server_port);
 	}
 
 	/* 
@@ -147,13 +163,16 @@ int main(int argc, char* argv[])
 	handler = threadpool_create(2);
 	in = threadpool_get_jqueue(handler);
 	out = queue_init();
+	players = players_init(max_players);
 
 	/* set out queue */
 	query_processing_set_out_queue(out);
 
 	/* running I/O server threads */
+	run_server_thread(&server, in, &is_stopped, timeout, players);
+	run_game_thread(&game, &is_stopped);
 	run_output_thread(&output, out, con);
-	run_input_thread(&input, in, out, con);
+	run_input_thread(&input, in, out, con, players);
 
     /* waiting for stop */
     wait_signal();
@@ -161,11 +180,13 @@ int main(int argc, char* argv[])
     /* stop threads */
     pthread_cancel(output);
     pthread_cancel(input);
+    pthread_cancel(game);
 
 	/* free resources */
 	gfunc_destroy();
 	threadpool_destroy(handler);
 	conn_destroy(con);
+	queue_destroy(out, NULL);
 	config_destroy(cfg);
 	return 0;
 }

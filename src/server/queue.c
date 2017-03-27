@@ -32,6 +32,7 @@ queue_t* queue_init()
 	pthread_cond_init(&(queue->cond), NULL);
 	queue_init_empty(queue);
 
+	queue->count = 0;
 	return queue;
 }
 

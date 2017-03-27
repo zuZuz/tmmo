@@ -6,8 +6,7 @@ GTKFLAGS=`pkg-config --cflags --libs gtk+-3.0`
 CLIENT=tmmo
 SERVER=server
 
-SERVER_INCFLAGS=-I./src/server
-PRCSSR_INCFLAGS=-I./src/game_processing
+INCFLAGS=-I./src/server -I./src/game_processing
 
 SERVER_SRC=$(wildcard src/server/*.c)
 PRCSSR_SRC=$(wildcard src/game_processing/*.c)
@@ -36,10 +35,10 @@ client: $(CLIENT_OBJ)
 	cp -r src/client/gui/* bin/client/
 
 build/server/%.o: src/server/%.c
-	$(CC) -c -o $@ $< $(CFLAGS) $(PRCSSR_INCFLAGS)
+	$(CC) -c -o $@ $< $(CFLAGS) $(INCFLAGS)
 
 build/server/%.o: src/game_processing/%.c
-	$(CC) -c -o $@ $< $(CFLAGS) $(SERVER_INCFLAGS)
+	$(CC) -c -o $@ $< $(CFLAGS) $(INCFLAGS)
 
 build/client/%.o: src/client/%.c
 	$(CC) -o $@ $< $(CFLAGS) $(GTKFLAGS)

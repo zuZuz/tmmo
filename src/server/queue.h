@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include <pthread.h>
+#include <stdlib.h>
 
 typedef struct queue_node_t queue_node_t;
 typedef struct queue_t queue_t;
@@ -15,7 +16,7 @@ struct queue_node_t
 
 struct queue_t
 {
-	size_t count;
+	int count;
 	pthread_mutex_t mutex;
 	pthread_cond_t cond;
 	queue_node_t* first;

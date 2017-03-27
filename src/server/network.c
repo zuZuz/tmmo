@@ -107,7 +107,26 @@ msg_t* msg_init(const conn_t* con)
 
 	memset(msg->key, 0, TOKEN_LEN);
 	memset(msg->body, 0, BODY_LEN);
+	
 	return msg;
+}
+
+ssize_t msg_send(const conn_t* con, msg_t* msg)
+{
+	if (!crypto_key_is_empty(msg->key))
+	{
+		crypto_encrypt(msg->body, msg->key);
+	}
+	
+
+	return sendto(
+		con->socket,
+		&msg->type, 
+		sizeof(msg_t) - sizeof(struct sockaddr), 
+		NOFLAGS, 
+		(struct sockaddr*) &msg->addr, 
+		sizeof(struct sockaddr)
+	);
 }
 
 void msg_set_key(msg_t* msg, const char* key)
@@ -124,23 +143,6 @@ void msg_set_body(msg_t* msg, const char* body)
 {
 	msg->len = strlen(body);
 	memcpy(msg->body, body, msg->len);
-}
-
-ssize_t msg_send(const conn_t* con, msg_t* msg)
-{
-	if (!crypto_key_is_empty(msg->key))
-	{
-		crypto_encrypt(msg->body, msg->key);
-	}
-
-	return sendto(
-		con->socket,
-		&msg->type, 
-		sizeof(msg_t) - sizeof(struct sockaddr), 
-		NOFLAGS, 
-		(struct sockaddr*) &msg->addr, 
-		sizeof(struct sockaddr)
-	);
 }
 
 msg_t* msg_recv(const conn_t* con)
@@ -167,11 +169,11 @@ msg_t* msg_recv(const conn_t* con)
 		return NULL;
 	}
 
+	
 	if (!crypto_key_is_empty(msg->key))
 	{
 		crypto_decrypt(msg->body, msg->key);
 	}
-
 	return msg;
 }
 

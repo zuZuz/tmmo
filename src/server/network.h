@@ -15,8 +15,16 @@ enum flags
 
 enum msg_type_t
 {
-    conn_test = 0,
-    text,
+	conn_test = 0,
+	user_msg,
+	main_msg,
+	chat_msg,
+	online_list,
+	map_update,
+	char_info,
+	logged_in = 100,
+	logged_out,
+	timed_out
 };
 
 typedef enum msg_type_t msg_type_t;

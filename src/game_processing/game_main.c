@@ -1,6 +1,9 @@
 #include "game_main.h"
 #include "item.h"
+#include "query_processing.h"
+#include <stdbool.h>
 #include <unistd.h>
+#include <memory.h>
 
 union_buildings_t barracks = {NULL, 0};
 union_buildings_t smithies = {NULL, 0};
@@ -10,32 +13,29 @@ union_buildings_t academies = {NULL, 0};
 
 characters_t characters;
 
-map_point_t* _map;
-size_t _msize_x;
-size_t _msize_y;
+map_point_t* map;
+size_t msize_x, msize_y;
+size_t buildings_cnt;
+building_t *buildings;
+int character_index_tick;
 
 static void game_tick();
 
 
-int game_init(char *map_name)
+bool game_init(char *map_name)
 {
     FILE *fmap;
-
-    size_t msize_x, msize_y;
-    size_t buildings_cnt;
-    building_t *buildings;
 
     if(map_name == NULL)
     {
         printf("mapfile should be specified\n");
-        return 1;
+        return false;
     }
 
     fmap = fopen(map_name, "r");
     if (fmap == NULL)
     {
-        printf("can't open mapfile: %s\n", map_name);
-        return 1;
+        return false;
     }
 
     fread(&buildings_cnt, sizeof(size_t), 1, fmap);
@@ -48,7 +48,7 @@ int game_init(char *map_name)
     fread(&msize_x, sizeof(size_t), 1, fmap);
     msize_y = msize_x;
 
-    map_point_t *map = malloc( msize_y * msize_x * sizeof(map_point_t) );
+    map = malloc( msize_y * msize_x * sizeof(map_point_t) );
 
     fread(map, msize_x * msize_y * sizeof(map_point_t), 1, fmap);
 
@@ -62,15 +62,12 @@ int game_init(char *map_name)
                buildings[i].point.name_id, buildings[i].point.x, buildings[i].point.y, buildings[i].size_x, buildings->size_y);
     }
 
-    game_start(map, msize_x, msize_y, buildings, buildings_cnt);
+    return true;
 }
 
 
-void game_start(map_point_t *map, size_t msize_x, size_t msize_y, building_t *buildings, size_t buildings_cnt)
+void game_start(bool *is_stopped)
 {
-    _map = map;
-    _msize_x = msize_x;
-    _msize_y = msize_y;
 
     for(int i = 0; i < buildings_cnt; i++)
     {
@@ -111,7 +108,7 @@ void game_start(map_point_t *map, size_t msize_x, size_t msize_y, building_t *bu
     printf("academies: %zu\n", academies.buildings_cnt);
 
 
-    while(1)
+    while( !(*is_stopped) )
     {
         game_tick();
 
@@ -122,61 +119,116 @@ void game_start(map_point_t *map, size_t msize_x, size_t msize_y, building_t *bu
 
 static void game_tick()
 {
-    for(int i = 0; i < characters.count; i++)
+    for(character_index_tick = 0; character_index_tick < characters.count; character_index_tick++)
     {
 
-        if ( (characters.arr[i]->next_step == nowhere && !characters.arr[i]->aggression)
-             || ( (clock() - characters.arr[i]->step_start_time) <= characters.arr[i]->step_time) )
+        if ( (characters.arr[character_index_tick]->next_step == nowhere && !characters.arr[character_index_tick]->aggression)
+             || ( (clock() - characters.arr[character_index_tick]->step_start_time) <= characters.arr[character_index_tick]->step_time) )
             continue;
 
-        (_map + characters.arr[i]->position.y * _msize_x + characters.arr[i]->position.x)->child_object_type = nothing;
-        (_map + characters.arr[i]->position.y * _msize_x + characters.arr[i]->position.x)->child_object = NULL;
+        (map + characters.arr[character_index_tick]->position.y * msize_x + characters.arr[character_index_tick]->position.x)->child_object_type = nothing;
+        (map + characters.arr[character_index_tick]->position.y * msize_x + characters.arr[character_index_tick]->position.x)->child_object = NULL;
 
-        character_find_target(characters.arr[i], &characters);
-        characters.arr[i]->next_step = character_move_to_target(characters.arr[i], _msize_x, _msize_y, _map);
-        characters.arr[i]->step_start_time = clock();
+        character_find_target(characters.arr[character_index_tick], &characters);
+        characters.arr[character_index_tick]->next_step = character_move_to_target(characters.arr[character_index_tick], msize_x, msize_y, map);
+        characters.arr[character_index_tick]->step_start_time = clock();
 
-        switch (characters.arr[i]->next_step)
+        switch (characters.arr[character_index_tick]->next_step)
         {
             case west:
-                characters.arr[i]->position.x++;
+                characters.arr[character_index_tick]->position.x++;
                 break;
 
             case east:
-                characters.arr[i]->position.x--;
+                characters.arr[character_index_tick]->position.x--;
                 break;
 
             case north:
-                characters.arr[i]->position.y++;
+                characters.arr[character_index_tick]->position.y++;
                 break;
 
             case south:
-                characters.arr[i]->position.y--;
+                characters.arr[character_index_tick]->position.y--;
                 break;
 
             case nowhere:
-                character_attack(characters.arr[i], &characters, _msize_x, _map, &i);
+                character_attack(characters.arr[character_index_tick], &characters, msize_x, map);
                 break;
         }
 
-        (_map + characters.arr[i]->position.y * _msize_x + characters.arr[i]->position.x)->child_object_type = character;
-        (_map + characters.arr[i]->position.y * _msize_x + characters.arr[i]->position.x)->child_object = characters.arr[i];
+        (map + characters.arr[character_index_tick]->position.y * msize_x + characters.arr[character_index_tick]->position.x)->child_object_type = characters.arr[character_index_tick]->is_player ? player : enemy;
+        (map + characters.arr[character_index_tick]->position.y * msize_x + characters.arr[character_index_tick]->position.x)->child_object = characters.arr[character_index_tick];
+
+        if(characters.arr[character_index_tick]->is_player)
+        {
+            characters.arr[character_index_tick]->next_step = nowhere;
+            characters.arr[character_index_tick]->aggression = false;
+        }
+
+
+        for(int i = 0; i < characters.count; i++)
+        {
+            if(!(characters.arr[i]->is_player))
+                continue;
+
+            msg_t *message;
+
+            message = msg_init(NULL);
+            message->addr = *(characters.arr[i]->addr);
+            message->type = map_update;
+
+            query_processing_new(message);
+
+            message = msg_init(NULL);
+            message->addr = *(characters.arr[i]->addr);
+            message->type = char_info;
+
+            query_processing_new(message);
+
+        }
 
 
         /*
          * DEBUG INFO
          *
-        printf("after character moved \"%s\" pos: %i, %i, target: %p, child_object: %i, next_step: %i\n", characters.arr[i]->name, characters.arr[i]->position.x, characters.arr[i]->position.y,
-               characters.arr[i]->target,
-               (_map + characters.arr[i]->position.y * _msize_x + characters.arr[i]->position.x)->child_object_type, characters.arr[i]->next_step );
+        printf("after character moved \"%s\" pos: %i, %i, target: %p, child_object: %i, next_step: %i\n", characters.arr[character_index_tick]->name, characters.arr[character_index_tick]->position.x, characters.arr[character_index_tick]->position.y,
+               characters.arr[character_index_tick]->target,
+               (map + characters.arr[character_index_tick]->position.y * msize_x + characters.arr[character_index_tick]->position.x)->child_object_type, characters.arr[character_index_tick]->next_step );
 
-        for(int j = 0; j < characters.arr[i]->items.count; j++)
+        for(int j = 0; j < characters.arr[character_index_tick]->items.count; j++)
         {
-            printf("%i:%i) %s (%i)\n", j + 1, characters.arr[i]->items.count, characters.arr[i]->items.arr[j]->name, characters.arr[i]->items.arr[j]->type);
+            printf("%i:%i) %s (%i)\n", j + 1, characters.arr[character_index_tick]->items.count, characters.arr[character_index_tick]->items.arr[j]->name, characters.arr[character_index_tick]->items.arr[j]->type);
         }
             */
 
+
+
     }
+}
+
+characters_t* game_get_characters()
+{
+    return &characters;
+}
+
+int* game_get_character_index_tick()
+{
+    return &character_index_tick;
+};
+
+size_t game_get_msize_x()
+{
+    return msize_x;
+}
+
+size_t game_get_msize_y()
+{
+    return msize_y;
+}
+
+map_point_t* game_get_map()
+{
+    return map;
 }
 
 
