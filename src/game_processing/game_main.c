@@ -173,4 +173,24 @@ static void game_tick()
     }
 }
 
+characters_t* game_get_characters()
+{
+    return &characters;
+}
+
+size_t game_get_msize_x()
+{
+    return msize_x;
+}
+
+size_t game_get_msize_y()
+{
+    return msize_y;
+}
+
+map_point_t* game_get_map()
+{
+    return map;
+}
+
 
