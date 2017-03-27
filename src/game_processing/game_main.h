@@ -28,6 +28,7 @@ void game_start(bool *is_stopped);
 bool game_init(char *map_name);
 
 characters_t* game_get_characters();
+int* game_get_character_index_tick();
 size_t game_get_msize_x();
 size_t game_get_msize_y();
 map_point_t* game_get_map();
