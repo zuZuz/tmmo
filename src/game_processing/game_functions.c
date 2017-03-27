@@ -1,11 +1,13 @@
 #include "game_functions.h"
 #include "str_hashtable.h"
 #include "shared_funcs.h"
+#include "character.h"
+#include "game_main.h"
 #include <string.h>
 #include <time.h>
 
 //the number of gaming functions
-#define FUNCS_CNT 2
+#define FUNCS_CNT 3
 
 typedef struct func_name
 {
@@ -15,6 +17,37 @@ typedef struct func_name
 
 
 static str_hashtable_t *funcs_hashtable;
+
+
+static void gfunc_map(msg_t *msg, char *args)
+{
+    character_t *player;
+    map_point_t *map = game_get_map();
+    size_t msize_x = game_get_msize_x();
+
+    if(game_get_characters()->count == 0)
+        character_add(game_get_characters(), character_new(180, 180, "Player", human, 1, 10000, true), game_get_msize_x(), game_get_msize_y(), game_get_map());
+
+    player = game_get_characters()->arr[0];
+
+    int body_index = 0;
+    for(int x = player->position.x - 4; x <= player->position.x + 4; x++)
+    {
+        for(int y = player->position.y - 4; y <= player->position.y + 4; y++)
+        {
+            ((int*)msg->body)[body_index] = (map + y * msize_x + x)->surface != empty
+                                            ? (map + y * msize_x + x)->surface + GROUND_TYPE_CNT
+                                            : (map + y * msize_x + x)->ground;
+            body_index++;
+
+            ((int*)msg->body)[body_index] = (map + y * msize_x + x)->child_object_type;
+            body_index++;
+        }
+    }
+
+    msg->len = sizeof(ground_type_t) * sizeof(object_type_t) * 81;
+
+}
 
 static void gfunc_go(msg_t *msg, char *args)
 {
@@ -53,6 +86,7 @@ bool gfunc_init(char **err)
             {
                     {gfunc_hello, "hello"},
                     {gfunc_go, "go"},
+                    {gfunc_map, "map"},
             };
 
     for(int i = 0; i < FUNCS_CNT; i++)
