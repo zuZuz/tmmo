@@ -8,7 +8,7 @@
 #include <time.h>
 
 //the number of gaming functions
-#define FUNCS_CNT 4
+#define FUNCS_CNT 5
 
 typedef struct func_name
 {
@@ -41,6 +41,15 @@ static void gfunc_say(msg_t *msg, msg_t **reply_msg, char *args)
     }
 
 }
+
+static void gfunc_bot(msg_t *msg, msg_t **reply_msg, char *args)
+{
+    character_t *bot = character_new(character_get_by_addr(&(msg->addr))->position.x + 1, 138, "Bot1", beast, 1, 2500 , false, NULL);
+    bot->aggression = true;
+    character_add(game_get_characters(), bot);
+}
+
+
 
 void gfunc_getinfo(msg_t *msg, msg_t **reply_msg, char *args)
 {
@@ -197,6 +206,7 @@ bool gfunc_init(char **err)
                     {gfunc_say, "say"},
                     {gfunc_hello, "hello"},
                     {gfunc_hello, "hi"},
+                    {gfunc_bot, "bot"}
             };
 
     for(int i = 0; i < FUNCS_CNT; i++)
