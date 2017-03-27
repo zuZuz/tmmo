@@ -105,6 +105,9 @@ void game_start(bool *is_stopped)
     printf("academies: %zu\n", academies.buildings_cnt);
 
 
+    character_add(game_get_characters(), character_new(76, 134, "Player", human, 1, 1, true), game_get_msize_x(), game_get_msize_y(), game_get_map());
+
+
     while( !(*is_stopped) )
     {
         game_tick();
@@ -155,6 +158,9 @@ static void game_tick()
 
         (map + characters.arr[i]->position.y * msize_x + characters.arr[i]->position.x)->child_object_type = character;
         (map + characters.arr[i]->position.y * msize_x + characters.arr[i]->position.x)->child_object = characters.arr[i];
+
+        if(characters.arr[i]->is_player)
+            characters.arr[i]->next_step = nowhere;
 
 
         /*
