@@ -7,7 +7,7 @@ static pthread_t server_worker;
 static conn_t *actv_conn;
 static bool pthr_is_active;
 
-static char key[KEY_LEN];
+static char key[TOKEN_LEN];
 
 static bool check_connection(conn_t* conn)
 {
@@ -26,7 +26,7 @@ static bool check_connection(conn_t* conn)
 
     if(msg->type != conn_test) return false;
 
-    memcpy(key, msg->key, KEY_LEN);
+    memcpy(key, msg->key, TOKEN_LEN);
     msg_destroy(msg);
 
     return true;
@@ -35,10 +35,27 @@ static bool check_connection(conn_t* conn)
 static void msg_process(msg_t* msg)
 {
     if(msg == NULL) return;
+
     switch (msg->type)
     {
-        case text:
+        case main_msg:
             gui_print_main_msg(msg->body);
+            break;
+
+        case chat_msg:
+            gui_print_chat_msg(msg->body);
+            break;
+
+        case char_info:
+            gui_print_char_info((char_info_t*)msg->body);
+            break;
+
+        case map_update:
+            gui_map_update((map_point_t*)msg->body);
+            break;
+
+        case online_list:
+            gui_print_online_list(msg->body);
             break;
 
         default:
@@ -114,7 +131,7 @@ void send_user_input(const char* input, size_t len)
     msg = msg_init(actv_conn);
     if(msg == NULL) return;
 
-    msg->type = text;
+    msg->type = user_msg;
     msg->len = len;
 
     msg_set_body(msg, input);
