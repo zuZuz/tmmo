@@ -6,6 +6,11 @@
 
 #define MIN_INPUT_LEN 3
 
+#define PREP_GO_UP "go up"
+#define PREP_GO_DOWN "go down"
+#define PREP_GO_RIGHT "go right"
+#define PREP_GO_LEFT "go left"
+
 typedef struct text_win_t {
     GtkTextBuffer *buf;
     GtkWidget *scroll_win, *text_view;

@@ -21,5 +21,5 @@
 
 .char_info_frame GtkLabel {
 	color: #F5F5F5;
-	border-bottom: 2px dotted #5A5A5A;
+	border-bottom: 2px solid #5A5A5A;
 }

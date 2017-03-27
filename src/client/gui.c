@@ -8,6 +8,7 @@ static init_win_t *init_win;
 static main_win_t *main_win;
 
 static print_data_wrapper_t* print_data_wrapper_create(void *element, char *str);
+static void sp_send_prepared_input(GtkWidget *widget, gpointer str);
 
 static void sp_command_enter(GtkEntry *entry);
 static void sp_ip_enter(GtkWidget *widget, gpointer entry);
@@ -21,6 +22,8 @@ static void activate(GtkApplication* app, gpointer user_data)
     GdkDisplay *display;
     GdkScreen *screen;
 
+    GtkWidget *up_but, *down_but, *right_but, *left_but;
+
     builder = gtk_builder_new_from_file("src/client/gui/main.glade");
 
     main_win = g_malloc(sizeof(main_win_t));
@@ -30,6 +33,11 @@ static void activate(GtkApplication* app, gpointer user_data)
     main_win->online_win = g_malloc(sizeof(text_win_t));
 
     init_win = g_malloc(sizeof(init_win_t));
+
+    up_but = GTK_WIDGET(gtk_builder_get_object(builder, "up_but"));
+    down_but = GTK_WIDGET(gtk_builder_get_object(builder, "down_but"));
+    right_but = GTK_WIDGET(gtk_builder_get_object(builder, "right_but"));
+    left_but = GTK_WIDGET(gtk_builder_get_object(builder, "left_but"));
 
     main_win->window = GTK_WIDGET(gtk_builder_get_object(builder, "main_window"));
     main_win->comm_entry = GTK_WIDGET(gtk_builder_get_object(builder, "comm_entry"));
@@ -56,6 +64,12 @@ static void activate(GtkApplication* app, gpointer user_data)
     init_win->window = GTK_WIDGET(gtk_builder_get_object(builder, "get_server_window"));
     init_win->entry = GTK_WIDGET(gtk_builder_get_object(builder, "address_entry"));
     init_win->button = GTK_WIDGET(gtk_builder_get_object(builder, "connect_button"));
+
+    /*connect buttons*/
+    g_signal_connect(up_but, "clicked", G_CALLBACK(sp_send_prepared_input), PREP_GO_UP);
+    g_signal_connect(down_but, "clicked", G_CALLBACK(sp_send_prepared_input), PREP_GO_DOWN);
+    g_signal_connect(right_but, "clicked", G_CALLBACK(sp_send_prepared_input), PREP_GO_RIGHT);
+    g_signal_connect(left_but, "clicked", G_CALLBACK(sp_send_prepared_input), PREP_GO_LEFT);
 
     /*connect for main_win->window*/
     g_signal_connect(main_win->comm_entry, "activate", G_CALLBACK(sp_command_enter), NULL);
@@ -167,6 +181,12 @@ static bool check_ip(const gchar* addr)
     return true;
 }
 
+static void sp_send_prepared_input(GtkWidget *widget, gpointer str)
+{
+    /*+1 added to send "\0"*/
+    send_user_input(str, strlen((char*)str) + 1);
+}
+
 static void sp_ip_enter(GtkWidget *widget, gpointer entry)
 {
     if(!check_ip(gtk_entry_get_text(GTK_ENTRY(entry)))) return;
@@ -212,6 +232,8 @@ void gui_print_chat_msg(char* str)
 void gui_map_update(map_point_t* points)
 {
     map_load(points, main_win->map);
+
+    memcpy(main_win->map->pos, (void*)points + sizeof(map_point_t)*MAP_SCALE*MAP_SCALE, sizeof(char)*16);
 
     g_idle_add(map_refresh, main_win->map);
 }

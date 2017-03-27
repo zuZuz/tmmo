@@ -3,6 +3,8 @@
 
 #include <gtk/gtk.h>
 
+#define FONT_SET "Arial 15px"
+
 #define MAP_SCALE 9
 #define SURFACE_COUNT 7
 #define OBJECT_COUNT 2
@@ -32,6 +34,7 @@ typedef struct map {
     cairo_surface_t *surface;
 
     map_point_t points[MAP_SCALE * MAP_SCALE];
+    char pos[16];
 }map_t;
 
 gboolean map_refresh(gpointer map);

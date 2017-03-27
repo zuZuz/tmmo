@@ -13,15 +13,21 @@ enum flags
 
 };
 
+//enum msg_type_t
+//{
+//    conn_test = 0,
+//    text,
+//};
+
 enum msg_type_t
 {
-	conn_test = 0,
-	user_msg,
-	main_msg,
-	chat_msg,
-	online_list,
-	map_update,
-	char_info
+    conn_test = 0,
+    user_msg,
+    main_msg,
+    chat_msg,
+    online_list,
+    map_update,
+    char_info
 };
 
 typedef enum msg_type_t msg_type_t;
@@ -44,31 +50,31 @@ struct conn_t
 	int socket;
 };
 
-conn_t*
+conn_t* 
 conn_init(char address[], port_t port, int flags);
 
-int
+int 
 conn_set_timeout(conn_t* con, unsigned long sec);
 
 void
 conn_destroy(conn_t* con);
 
-msg_t*
+msg_t* 
 msg_init(const conn_t* con);
 
-void
+void 
 msg_set_key(msg_t* msg, const char* key);
 
-void
+void 
 msg_set_type(msg_t* msg, msg_type_t type);
 
-void
+void 
 msg_set_body(msg_t* msg, const char* body);
 
-ssize_t
+ssize_t 
 msg_send(const conn_t* con, msg_t* msg);
 
-msg_t*
+msg_t* 
 msg_recv(const conn_t* con);
 
 void

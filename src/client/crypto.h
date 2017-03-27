@@ -4,19 +4,19 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-void
+void 
 crypto_init();
 
-bool
+bool 
 crypto_key_is_empty(char key[]);
 
-void
+void 
 crypto_gen_key(char key[], size_t len);
 
-void
+void 
 crypto_encrypt(char str[], char key[]);
 
-void
+void 
 crypto_decrypt(char str[], char key[]);
 
 #endif
