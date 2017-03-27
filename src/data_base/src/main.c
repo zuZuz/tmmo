@@ -176,6 +176,30 @@ void serialize(FILE* file)
     }
 }
 
+void deserialize(FILE* file)
+{
+    char buffer[2048];
+    char *key, *value;
+    node* link;
+
+    printf("loading from file\n");
+
+    while (fgets(buffer, 2048, file))
+    {
+        buffer[strlen(buffer) - 1] = '\0';
+
+        key = strtok(buffer, "\x01");
+        value = strtok(NULL, "\x01");
+
+        link = malloc(sizeof(node));
+        link->key = strdup(key);
+        link->data_len = strlen(value);
+        link->data = malloc(link->data_len);
+        memcpy(link->data, value, link->data_len);
+        sglib_node_add(&root, link);
+    }
+}
+
 void on_new_connection(uv_stream_t *server, int status)
 {
     printf("new connection\n");
@@ -206,6 +230,8 @@ int main(int argc, char **argv) {
     int port = 6347;
     int verbose = 0;
     int opt;
+    char* filename = NULL;
+    FILE* file;
 
     root = NULL;
 
@@ -236,7 +262,17 @@ int main(int argc, char **argv) {
         }
     }
 
-
+    if (filename)
+    {
+        file = fopen(filename, "r");
+        deserialize(file);
+        fclose(file);
+    }
+    else if ((file = fopen("store.db", "r")) != NULL)
+    {
+        deserialize(file);
+        fclose(file);
+    }
 
     uv_ip4_addr(host, port, &addr);
 
@@ -269,5 +305,9 @@ int main(int argc, char **argv) {
     uv_signal_start(&sig, wait_signal, SIGINT);
     uv_run(&loop, UV_RUN_DEFAULT);
     uv_loop_close(&loop);
+
+    file = fopen("store.db", "w");
+    serialize(file);
+    fclose(file);
 }
 
