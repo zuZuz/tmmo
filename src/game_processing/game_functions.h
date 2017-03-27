@@ -28,4 +28,7 @@ void (* gfunc_get(char *func_name) )(msg_t*, msg_t**, char*);
 
 void gfunc_destroy();
 
+void gfunc_map(msg_t *msg, msg_t **reply_msg, char *args);
+void gfunc_getinfo(msg_t *msg, msg_t **reply_msg, char *args);
+
 #endif //GAME_FUNCTIONS_H

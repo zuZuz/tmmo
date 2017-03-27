@@ -3,6 +3,7 @@
 #include "shared_funcs.h"
 #include "character.h"
 #include "game_main.h"
+#include "query_processing.h"
 #include <string.h>
 #include <time.h>
 
@@ -21,22 +22,30 @@ static str_hashtable_t *funcs_hashtable;
 static void gfunc_say(msg_t *msg, msg_t **reply_msg, char *args)
 {
     character_t *player;
-    player = game_get_characters()->arr[0];
+    player = character_get_by_addr(&(msg->addr));
 
-    *reply_msg = msg_init(NULL);
-    (*reply_msg)->addr = msg->addr;
-    strcpy((*reply_msg)->key, msg->key);
+    for(int i = 0; i < game_get_characters()->count; i++)
+    {
+        if(!(game_get_characters()->arr[i]->is_player))
+            continue;
 
-    (*reply_msg)->len = (size_t)sprintf((*reply_msg)->body, "%s: %s", player->name, args) + 1;
-    (*reply_msg)->type = chat_msg;
+        msg_t *message;
 
+        message = msg_init(NULL);
+        message->addr = *(game_get_characters()->arr[i]->addr);
+
+        message->len = (size_t)sprintf(message->body, "%s: %s", player->name, args) + 1;
+        message->type = chat_msg;
+
+        query_processing_new(message);
+    }
 
 }
 
-static void gfunc_getme(msg_t *msg, msg_t **reply_msg, char *args)
+void gfunc_getinfo(msg_t *msg, msg_t **reply_msg, char *args)
 {
     character_t *player;
-    player = game_get_characters()->arr[0];
+    player = character_get_by_addr(&(msg->addr));
 
     *reply_msg = msg_init(NULL);
     (*reply_msg)->addr = msg->addr;
@@ -56,50 +65,17 @@ static void gfunc_getme(msg_t *msg, msg_t **reply_msg, char *args)
 
 }
 
-static void gfunc_map(msg_t *msg, msg_t **reply_msg, char *args)
+void gfunc_map(msg_t *msg, msg_t **reply_msg, char *args)
 {
     character_t *player;
     map_point_t *map = game_get_map();
     size_t msize_x = game_get_msize_x();
 
-    player = game_get_characters()->arr[0];
+    player = character_get_by_addr(&(msg->addr));
 
     *reply_msg = msg_init(NULL);
     (*reply_msg)->addr = msg->addr;
     strcpy((*reply_msg)->key, msg->key);
-
-
-    /*
-     * FOR DEBUG
-     */
-    (map + player->position.y * msize_x + player->position.x)->child_object_type = nothing;
-    (map + player->position.y * msize_x + player->position.x)->child_object = NULL;
-    switch (player->next_step)
-    {
-        case west:
-            player->position.x++;
-            break;
-
-        case east:
-            player->position.x--;
-            break;
-
-        case north:
-            player->position.y++;
-            break;
-
-        case south:
-            player->position.y--;
-            break;
-
-    }
-    player->next_step = nowhere;
-    (map + player->position.y * msize_x + player->position.x)->child_object_type = character;
-    (map + player->position.y * msize_x + player->position.x)->child_object = player;
-    /*
-     * END FOR DEBUG
-     */
-
 
     int body_index = 0;
     for(int x = player->position.x - 4; x <= player->position.x + 4; x++)
@@ -128,18 +104,19 @@ static void gfunc_go(msg_t *msg, msg_t **reply_msg, char *args)
 {
     character_t *player;
 
-    player = game_get_characters()->arr[0];
-
-    *reply_msg = msg_init(NULL);
-    (*reply_msg)->addr = msg->addr;
-    strcpy((*reply_msg)->key, msg->key);
+    player = character_get_by_addr(&(msg->addr));
 
     char *answ;
-    (*reply_msg)->type = main_msg;
+
 
     char *direct = get_word(&args);
     if(direct == NULL)
     {
+        *reply_msg = msg_init(NULL);
+        (*reply_msg)->addr = msg->addr;
+        strcpy((*reply_msg)->key, msg->key);
+        (*reply_msg)->type = main_msg;
+
         (*reply_msg)->len = (size_t)sprintf((*reply_msg)->body, "You should specify the direction!%s", direct) + 1;
         return;
     }
@@ -162,6 +139,11 @@ static void gfunc_go(msg_t *msg, msg_t **reply_msg, char *args)
     }
     else
     {
+        *reply_msg = msg_init(NULL);
+        (*reply_msg)->addr = msg->addr;
+        strcpy((*reply_msg)->key, msg->key);
+        (*reply_msg)->type = main_msg;
+
         answ = "You should specify the correct direction!";
         (*reply_msg)->len = strlen(answ);
         memcpy((*reply_msg)->body, answ, (*reply_msg)->len + 1);
@@ -170,13 +152,25 @@ static void gfunc_go(msg_t *msg, msg_t **reply_msg, char *args)
 
     if(character_move_to_target(player, game_get_msize_x(), game_get_msize_y(), game_get_map()) == nowhere)
     {
+        *reply_msg = msg_init(NULL);
+        (*reply_msg)->addr = msg->addr;
+        strcpy((*reply_msg)->key, msg->key);
+        (*reply_msg)->type = main_msg;
 
         (*reply_msg)->len = (size_t)sprintf((*reply_msg)->body, "You cannot go %s", direct) + 1;
         return;
     }
 
-    gfunc_map(msg, reply_msg, args);
+}
 
+static void gfunc_hello(msg_t *msg, msg_t **reply_msg, char *args)
+{
+    *reply_msg = msg_init(NULL);
+    (*reply_msg)->addr = msg->addr;
+    strcpy((*reply_msg)->key, msg->key);
+
+    (*reply_msg)->type = main_msg;
+    (*reply_msg)->len = (size_t)sprintf((*reply_msg)->body, "Hello, %s!", (character_get_by_addr(&(msg->addr)))->name) + 1;
 }
 
 static void gfunc_dntknow(msg_t *msg, msg_t **reply_msg, char *args)
@@ -200,9 +194,9 @@ bool gfunc_init(char **err)
     func_name_t funcs[FUNCS_CNT] =
             {
                     {gfunc_go, "go"},
-                    {gfunc_map, "map"},
-                    {gfunc_getme, "getme"},
                     {gfunc_say, "say"},
+                    {gfunc_hello, "hello"},
+                    {gfunc_hello, "hi"},
             };
 
     for(int i = 0; i < FUNCS_CNT; i++)

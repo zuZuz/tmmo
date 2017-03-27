@@ -1,13 +1,20 @@
 #include "character.h"
+#include "game_main.h"
 #include <limits.h>
 #include <string.h>
 
 extern double sqrt(double);
 extern double pow(double, double);
 
-character_t* character_new(int position_x, int position_y, char *name, character_race_t race, int lvl, clock_t step_time, bool is_player)
+static bool compare_address( struct sockaddr_in *a1, struct sockaddr_in *a2)
 {
-    character_t* new_char = malloc(sizeof(character_t));
+    return ( sizeof (a1)  == sizeof ( a2 ) && (a1->sin_family == a2->sin_family)
+             && (a1->sin_addr.s_addr == a2->sin_addr.s_addr) && (a1->sin_port == a2->sin_port) );
+
+}
+
+character_t* character_new(int position_x, int position_y, char *name, character_race_t race, int lvl, clock_t step_time, bool is_player, struct sockaddr_in *addr) {
+    character_t *new_char = malloc(sizeof(character_t));
     new_char->position.x = position_x;
     new_char->position.y = position_y;
     sprintf(new_char->name, "%s", name);
@@ -22,9 +29,9 @@ character_t* character_new(int position_x, int position_y, char *name, character
     new_char->step_start_time = 0;
     new_char->items.arr = NULL;
     new_char->items.count = 0;
+    new_char->addr = addr;
 
-    switch(race)
-    {
+    switch (race) {
         case human:
             new_char->characteristics.armor = 5;
             new_char->characteristics.evasion = 2;
@@ -49,6 +56,22 @@ character_t* character_new(int position_x, int position_y, char *name, character
     return new_char;
 }
 
+character_t* character_get_by_addr(struct sockaddr_in *addr)
+{
+    for(int i = 0; i < game_get_characters()->count; i++)
+    {
+        if( !(game_get_characters()->arr[i]->is_player))
+            continue;
+
+        if(compare_address(game_get_characters()->arr[i]->addr, addr))
+        {
+            return game_get_characters()->arr[i];
+        }
+    }
+
+    return NULL;
+}
+
 void character_set_target(character_t *character, character_t *target)
 {
     character->target = target;
@@ -56,25 +79,28 @@ void character_set_target(character_t *character, character_t *target)
     character->step_start_time = 0;
 }
 
-void character_add(characters_t *characters, character_t *_character, size_t _msize_x, size_t _msize_y, map_point_t* _map)
+void character_add(characters_t *characters, character_t *_character)
 {
     characters->arr = realloc(characters->arr, (characters->count + 1) * sizeof(void*));
     characters->arr[characters->count] = _character;
     _character->id = characters->count;
     characters->count++;
 
-    (_map + _character->position.y * _msize_x + _character->position.x)->child_object_type = character;
+    (game_get_map() + _character->position.y * game_get_msize_x() + _character->position.x)->child_object_type = _character->is_player ? player : enemy;
 }
 
-void character_remove(characters_t *characters, character_t *character, size_t _msize_x, map_point_t* _map, int *index)
+void character_remove(characters_t *characters, character_t *character)
 {
-    (_map + character->position.y * _msize_x + character->position.x)->child_object_type = nothing;
-    (_map + character->position.y * _msize_x + character->position.x)->child_object = NULL;
+    (game_get_map() + character->position.y * game_get_msize_x() + character->position.x)->child_object_type = nothing;
+    (game_get_map() + character->position.y * game_get_msize_x() + character->position.x)->child_object = NULL;
+
+    if(character->addr != NULL)
+        free(character->addr);
 
     if(characters->count - 1  !=  character->id)
     {
-        if( (index != NULL) && ((*index) > character->id) )
-            (*index)--;
+        if((*game_get_character_index_tick()) > character->id )
+            (*game_get_character_index_tick())--;
 
         memmove(characters->arr + character->id, characters->arr + character->id + 1, (characters->count - character->id) * sizeof(void *));
     }
@@ -120,7 +146,7 @@ static int character_damage(character_t *character, character_t *target)
 }
 
 //TODO: add action and send to target
-bool character_attack(character_t *character, characters_t *characters, size_t _msize_x, map_point_t* _map, int *index)
+bool character_attack(character_t *character, characters_t *characters, size_t _msize_x, map_point_t* _map)
 {
     double dist;
 
@@ -145,7 +171,7 @@ bool character_attack(character_t *character, characters_t *characters, size_t _
 
         if(character->target->characteristics.hp <= 0)
         {
-            character_remove(characters, character->target, _msize_x, _map, index);
+            character_remove(characters, character->target);
             character->target = NULL;
         }
 
