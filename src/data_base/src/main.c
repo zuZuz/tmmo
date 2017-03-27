@@ -49,9 +49,9 @@ static void send_reply(uv_stream_t* handle, char cmd, char* key, char *data, siz
     uv_buf_t buf;
     uv_write_t req;
     key_len = strlen(key);
-    total_len = key_len + data_len + 2; 
+    total_len = key_len + data_len + 3; 
     buffer = malloc(total_len);
-    buffer[0] = cmd;
+    buffer[total_len] = '\0';
     strcpy(&buffer[1], key);
     if (data_len > 0) {
         memcpy(&buffer[key_len+2], data, data_len);
