@@ -36,31 +36,36 @@ static void msg_process(msg_t* msg)
 {
     if(msg == NULL) return;
 
+    void* body = g_malloc(sizeof(char)*BODY_LEN);
+    memcpy(body, msg->body, sizeof(char)*BODY_LEN);
+
     switch (msg->type)
     {
         case main_msg:
-            gui_print_main_msg(msg->body);
+            gui_print_main_msg(body);
             break;
 
         case chat_msg:
-            gui_print_chat_msg(msg->body);
+            gui_print_chat_msg(body);
             break;
 
         case char_info:
-            gui_print_char_info((char_info_t*)msg->body);
+            gui_print_char_info((char_info_t*)body);
             break;
 
         case map_update:
-            gui_map_update((map_point_t*)msg->body);
+            gui_map_update((map_point_t*)body);
             break;
 
         case online_list:
-            gui_print_online_list(msg->body);
+            gui_print_online_list(body);
             break;
 
         default:
             break;
     }
+
+    msg_destroy(msg);
 }
 
 static void* serv_listen_routine(void* args)

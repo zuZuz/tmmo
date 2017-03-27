@@ -14,7 +14,8 @@ static void load_images()
     surfaces[floor] = gdk_pixbuf_new_from_file("src/client/gui/map_surf/floor.jpg", NULL);
     surfaces[unknown] = gdk_pixbuf_new_from_file("src/client/gui/map_surf/unknown.jpg", NULL);
 
-    objects[character] = gdk_pixbuf_new_from_file("src/client/gui/map_obj/character.jpg", NULL);
+    objects[player] = gdk_pixbuf_new_from_file("src/client/gui/map_obj/character.jpg", NULL);
+    objects[enemy] = gdk_pixbuf_new_from_file("src/client/gui/map_obj/enemy.jpg", NULL);
 }
 
 static void clear_surface (cairo_surface_t *surface)
