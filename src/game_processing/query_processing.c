@@ -26,7 +26,7 @@ void query_processing_new(void *message)
 
     switch( ((msg_t*)message) -> type )
     {
-        case text: have_asnw = query_text( (msg_t*)message );
+        case main_msg: have_asnw = query_text( (msg_t*)message );
             break;
 
         case conn_test: have_asnw = true;
