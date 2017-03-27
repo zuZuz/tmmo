@@ -10,7 +10,7 @@ character_t* character_new(int position_x, int position_y, char *name, character
     character_t* new_char = malloc(sizeof(character_t));
     new_char->position.x = position_x;
     new_char->position.y = position_y;
-    new_char->name = name;
+    sprintf(new_char->name, "%s", name);
     new_char->aggression = false;
     new_char->step_time = step_time;
     new_char->target = NULL;
@@ -58,7 +58,7 @@ void character_set_target(character_t *character, character_t *target)
 
 void character_add(characters_t *characters, character_t *_character, size_t _msize_x, size_t _msize_y, map_point_t* _map)
 {
-    characters->arr = realloc(characters->arr, characters->count + 1);
+    characters->arr = realloc(characters->arr, (characters->count + 1) * sizeof(void*));
     characters->arr[characters->count] = _character;
     _character->id = characters->count;
     characters->count++;
@@ -164,7 +164,7 @@ bool character_attack(character_t *character, characters_t *characters, size_t _
 
 void character_add_item(character_t *character, item_t *item)
 {
-    character->items.arr = realloc(character->items.arr, character->items.count + 1);
+    character->items.arr = realloc(character->items.arr, (character->items.count + 1)  * sizeof(void*) );
     character->items.arr[character->items.count] = item;
     character->items.count++;
 }
@@ -185,28 +185,28 @@ direction_t character_move_to_target(character_t *character, size_t _msize_x, si
         {
             case west:
                 player_step_avaliable = (character->position.x + 1 < _msize_x)
-                                        &&  ((_map + character->position.y*_msize_x + character->position.x + 1)->surface == empty)
+                                        &&  ((_map + character->position.y*_msize_x + character->position.x + 1)->surface != wall)
                                              && ((_map + character->position.y*_msize_x + character->position.x + 1)->child_object_type == nothing)
                                                 && ((_map + character->position.y*_msize_x + character->position.x + 1)->ground < GROUND_TYPE_CNT);
                 break;
 
             case east:
                 player_step_avaliable = (character->position.x - 1 >= 0)
-                                        &&  ((_map + character->position.y*_msize_x + character->position.x - 1)->surface == empty)
+                                        &&  ((_map + character->position.y*_msize_x + character->position.x - 1)->surface != wall)
                                              && ((_map + character->position.y*_msize_x + character->position.x - 1)->child_object_type == nothing)
                                                 && ((_map + character->position.y*_msize_x + character->position.x - 1)->ground < GROUND_TYPE_CNT);
                 break;
 
             case north:
                 player_step_avaliable = (character->position.y + 1 < _msize_y)
-                                        &&  ((_map + (character->position.y + 1)*_msize_x + character->position.x)->surface == empty)
+                                        &&  ((_map + (character->position.y + 1)*_msize_x + character->position.x)->surface != wall)
                                              && ((_map + (character->position.y + 1)*_msize_x + character->position.x)->child_object_type == nothing)
-                                                && ((_map + (character->position.y + 1)*_msize_x + character->position.x)->->ground < GROUND_TYPE_CNT);
+                                                && ((_map + (character->position.y + 1)*_msize_x + character->position.x)->ground < GROUND_TYPE_CNT);
                 break;
 
             case south:
                 player_step_avaliable = (character->position.y - 1 >= 0)
-                                        &&  ((_map + (character->position.y - 1)*_msize_x + character->position.x)->surface == empty)
+                                        &&  ((_map + (character->position.y - 1)*_msize_x + character->position.x)->surface != wall)
                                              && ((_map + (character->position.y - 1)*_msize_x + character->position.x)->child_object_type == nothing)
                                                 && ((_map + (character->position.y - 1)*_msize_x + character->position.x)->ground < GROUND_TYPE_CNT);
                 break;
@@ -226,7 +226,7 @@ direction_t character_move_to_target(character_t *character, size_t _msize_x, si
     min_dist = INT_MAX;
     for(int x = character->position.x + 1; (x < _msize_x) && (x <= character->position.x + visibility_range) ; x++)
     {
-        if( ((_map + character->position.y*_msize_x + x)->surface != empty) || ((_map + character->position.y*_msize_x + x)->child_object_type != nothing)
+        if( ((_map + character->position.y*_msize_x + x)->surface == wall) || ((_map + character->position.y*_msize_x + x)->child_object_type != nothing)
                 || ((_map + character->position.y*_msize_x + x)->ground >= GROUND_TYPE_CNT))
             break;
 
@@ -239,7 +239,7 @@ direction_t character_move_to_target(character_t *character, size_t _msize_x, si
     min_dist = INT_MAX;
     for(int x = character->position.x - 1; (x >= 0) && (x >= character->position.x - visibility_range) ; x--)
     {
-        if( ((_map + character->position.y*_msize_x + x)->surface != empty) || ((_map + character->position.y*_msize_x + x)->child_object_type != nothing)
+        if( ((_map + character->position.y*_msize_x + x)->surface == wall) || ((_map + character->position.y*_msize_x + x)->child_object_type != nothing)
                 || ((_map + character->position.y*_msize_x + x)->ground >= GROUND_TYPE_CNT))
             break;
 
@@ -252,7 +252,7 @@ direction_t character_move_to_target(character_t *character, size_t _msize_x, si
     min_dist = INT_MAX;
     for(int y = character->position.y + 1; (y < _msize_y) && (y <= character->position.y + visibility_range) ; y++)
     {
-        if( ((_map + y*_msize_x + character->position.x)->surface != empty) || ((_map + y*_msize_x + character->position.x)->child_object_type != nothing)
+        if( ((_map + y*_msize_x + character->position.x)->surface == wall) || ((_map + y*_msize_x + character->position.x)->child_object_type != nothing)
                 || ((_map + y*_msize_x + character->position.x)->ground >= GROUND_TYPE_CNT))
             break;
 
@@ -265,7 +265,7 @@ direction_t character_move_to_target(character_t *character, size_t _msize_x, si
     min_dist = INT_MAX;
     for(int y = character->position.y - 1; (y >= 0) && (y >= character->position.y - visibility_range) ; y--)
     {
-        if( ((_map + y*_msize_x + character->position.x)->surface != empty) || ((_map + y*_msize_x + character->position.x)->child_object_type != nothing)
+        if( ((_map + y*_msize_x + character->position.x)->surface == wall) || ((_map + y*_msize_x + character->position.x)->child_object_type != nothing)
                 || ((_map + y*_msize_x + character->position.x)->ground >= GROUND_TYPE_CNT))
             break;
 

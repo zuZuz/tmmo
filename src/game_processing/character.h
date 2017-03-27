@@ -60,7 +60,7 @@ typedef struct items
 
 typedef struct character
 {
-    char *name;
+    char name[128];
     character_race_t race;
     int id;
     int lvl;
