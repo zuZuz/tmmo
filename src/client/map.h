@@ -19,10 +19,13 @@ typedef enum surface_type {
     unknown
 } surface_type_t;
 
-typedef enum object_type {
+typedef enum object_type
+{
     nothing,
-    character
+    player,
+    enemy
 } object_type_t;
+
 
 typedef struct map_point {
     surface_type_t surface;
