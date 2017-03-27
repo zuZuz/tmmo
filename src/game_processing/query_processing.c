@@ -4,7 +4,7 @@
 
 static queue_t* out_queue;
 
-static bool query_text(msg_t *msg)
+static void query_text(msg_t *msg, msg_t **reply_msg)
 {
     char *pos = msg->body;
     char *func_name;
@@ -13,20 +13,19 @@ static bool query_text(msg_t *msg)
 
     if(func_name != NULL)
     {
-        ( gfunc_get(func_name) ) (msg, pos);
-        return true;
+        ( gfunc_get(func_name) ) (msg, reply_msg, pos);
     }
-    else
-        return false;
 }
 
 void query_processing_new(void *message)
 {
     bool have_asnw = false;
 
+    msg_t *reply_msg = NULL;
+
     switch( ((msg_t*)message) -> type )
     {
-        case main_msg: query_text( (msg_t*)message );
+        case user_msg: query_text( (msg_t*)message, &reply_msg );
             break;
 
         case conn_test: have_asnw = true;
@@ -36,13 +35,22 @@ void query_processing_new(void *message)
     }
 
     if(!have_asnw)
-        have_asnw = ((msg_t*)message)->len != 0;
+    {
+        have_asnw = reply_msg != NULL;
+        msg_destroy((msg_t*)message);
+    }
+    else
+    {
+        reply_msg = message;
+    }
 
     if(have_asnw == true)
     {
-        queue_enqueue(out_queue, message);
+        queue_enqueue(out_queue, reply_msg);
         pthread_cond_signal(&(out_queue->cond));
     }
+
+
 }
 
 void query_processing_set_out_queue(queue_t* _out_queue)
