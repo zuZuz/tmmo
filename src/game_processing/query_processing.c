@@ -22,11 +22,11 @@ static bool query_text(msg_t *msg)
 
 void query_processing_new(void *message)
 {
-    bool have_asnw;
+    bool have_asnw = false;
 
     switch( ((msg_t*)message) -> type )
     {
-        case main_msg: have_asnw = query_text( (msg_t*)message );
+        case main_msg: query_text( (msg_t*)message );
             break;
 
         case conn_test: have_asnw = true;
@@ -34,6 +34,9 @@ void query_processing_new(void *message)
 
         default: return;
     }
+
+    if(!have_asnw)
+        have_asnw = ((msg_t*)message)->len != 0;
 
     if(have_asnw == true)
     {

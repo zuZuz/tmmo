@@ -51,10 +51,58 @@ static void gfunc_map(msg_t *msg, char *args)
 
 static void gfunc_go(msg_t *msg, char *args)
 {
-    char *answ = get_word(&args);
+    character_t *player;
+    if(game_get_characters()->count == 0)
+        character_add(game_get_characters(), character_new(180, 180, "Player", human, 1, 10000, true), game_get_msize_x(), game_get_msize_y(), game_get_map());
 
-    msg->len = strlen(answ);
-    memcpy(msg->body, answ, msg->len + 1);
+    player = game_get_characters()->arr[0];
+
+    char *answ;
+
+    char *direct = get_word(&args);
+    if(direct == NULL)
+    {
+        answ = "You should specify the direction!";
+        msg->len = strlen(answ);
+        memcpy(msg->body, answ, msg->len + 1);
+        return;
+    }
+
+    if( (strcmp(direct, "west") == 0) || (strcmp(direct, "right") == 0) )
+    {
+        player->next_step = west;
+    }
+    else if( (strcmp(direct, "east") == 0) || (strcmp(direct, "left") == 0) )
+    {
+        player->next_step = east;
+    }
+    else if( (strcmp(direct, "north") == 0) || (strcmp(direct, "up") == 0) )
+    {
+        player->next_step = north;
+    }
+    else if( (strcmp(direct, "south") == 0) || (strcmp(direct, "down") == 0) )
+    {
+        player->next_step = south;
+    }
+    else
+    {
+        answ = "You should specify the correct direction!";
+        msg->len = strlen(answ);
+        memcpy(msg->body, answ, msg->len + 1);
+        return;
+    }
+
+    if(character_move_to_target(player, game_get_msize_x(), game_get_msize_y(), game_get_map()) == nowhere)
+    {
+        answ = "You can't go ";
+        memcpy(msg->body, answ, strlen(answ) + 1);
+
+        strcat(msg->body, direct);
+        msg->len = strlen(answ) + strlen(direct) + 1;
+
+        return;
+    }
+
 }
 
 static void gfunc_hello(msg_t *msg, char *args)
