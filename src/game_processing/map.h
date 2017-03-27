@@ -15,7 +15,8 @@ typedef enum ground_type
 
 typedef enum object_type
 {   nothing,
-    character
+    player,
+    enemy
 } object_type_t;
 
 #define SURFACE_TYPE_CNT 2
