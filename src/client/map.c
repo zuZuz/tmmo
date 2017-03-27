@@ -1,20 +1,20 @@
 #include "map.h"
+#include <string.h>
 
 static GdkPixbuf* surfaces[SURFACE_COUNT];
 static GdkPixbuf* objects[OBJECT_COUNT];
 
 static void load_images()
 {
-    surfaces[soil] = gdk_pixbuf_new_from_file("map_surf/soil.jpg", NULL);
-    surfaces[sand] = gdk_pixbuf_new_from_file("map_surf/sand.jpg", NULL);
-    surfaces[grass] = gdk_pixbuf_new_from_file("map_surf/grass.jpg", NULL);
-    surfaces[water] = gdk_pixbuf_new_from_file("map_surf/water.jpg", NULL);
-    surfaces[empty] = gdk_pixbuf_new_from_file("map_surf/empty.jpg", NULL);
-    surfaces[wall] = gdk_pixbuf_new_from_file("map_surf/wall.jpg", NULL);
-    surfaces[floor] = gdk_pixbuf_new_from_file("map_surf/floor.jpg", NULL);
-    surfaces[unknown] = gdk_pixbuf_new_from_file("map_surf/unknown.jpg", NULL);
+    surfaces[soil] = gdk_pixbuf_new_from_file("src/client/gui/map_surf/soil.jpg", NULL);
+    surfaces[sand] = gdk_pixbuf_new_from_file("src/client/gui/map_surf/sand.jpg", NULL);
+    surfaces[grass] = gdk_pixbuf_new_from_file("src/client/gui/map_surf/grass.jpg", NULL);
+    surfaces[water] = gdk_pixbuf_new_from_file("src/client/gui/map_surf/water.jpg", NULL);
+    surfaces[wall] = gdk_pixbuf_new_from_file("src/client/gui/map_surf/wall.jpg", NULL);
+    surfaces[floor] = gdk_pixbuf_new_from_file("src/client/gui/map_surf/floor.jpg", NULL);
+    surfaces[unknown] = gdk_pixbuf_new_from_file("src/client/gui/map_surf/unknown.jpg", NULL);
 
-    objects[character] = gdk_pixbuf_new_from_file("map_obj/character.jpg", NULL);
+    objects[character] = gdk_pixbuf_new_from_file("src/client/gui/map_obj/character.jpg", NULL);
 }
 
 static void clear_surface (cairo_surface_t *surface)
@@ -45,6 +45,7 @@ gboolean sp_draw_area_init(GtkWidget *draw_area, GdkEventConfigure *event, gpoin
                                                      gtk_widget_get_allocated_height(draw_area));
 
     clear_surface(((map_t*)map)->surface);
+    memset(((map_t*)map)->pos, 0, sizeof(char)*16);
 
     load_images();
 
@@ -56,7 +57,7 @@ gboolean sp_draw_area_init(GtkWidget *draw_area, GdkEventConfigure *event, gpoin
 
     map_refresh((map_t*)map);
 
-    return TRUE;
+    return FALSE;
 }
 
 void map_load(map_point_t* points, map_t* map)
@@ -70,6 +71,9 @@ void map_load(map_point_t* points, map_t* map)
 
 gboolean map_refresh(gpointer map)
 {
+    PangoLayout *layout;
+    PangoFontDescription *desc;
+
     double x_scale, y_scale;
     GdkPixbuf *pixbuf;
 
@@ -94,9 +98,23 @@ gboolean map_refresh(gpointer map)
         cairo_paint(cr);
     }
 
+    /*Print coordinates*/
+    layout = pango_cairo_create_layout(cr);
+    desc = pango_font_description_from_string (FONT_SET);
+
+    cairo_move_to(cr, 0, 0);
+    pango_layout_set_text (layout, ((map_t*)map)->pos, -1);
+    cairo_set_source_rgb (cr, 0.96, 0.96, 0.96);
+    pango_layout_set_font_description (layout, desc);
+    pango_font_description_free (desc);
+
+    pango_cairo_show_layout (cr, layout);
+
+    g_object_unref(layout);
+
     cairo_destroy(cr);
 
     gtk_widget_queue_draw(((map_t*)map)->draw_area);
 
-    return TRUE;
+    return FALSE;
 }
